@@ -7,7 +7,7 @@ int main(int argc, char* argv[]){
     //cout<<"输入.sv文件路径:";
     fs::path fp;
     //cin>>fp;
-    fp = "../../../test/test_module.sv";
+    fp = "/tmp/tmp.V41aZ2znkH/test/test_module.sv";
     SourceManager SM(fp);
     //string text = "int ;";
     //cin >> text;
