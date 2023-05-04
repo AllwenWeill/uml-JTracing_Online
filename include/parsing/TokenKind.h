@@ -3,6 +3,8 @@
 #include "allinclude.h"
 enum class TokenKind : std::uint16_t {
     Unknown,
+    ProtectKeyword,
+    RandomKeyword,
     EndOfFile,
     Identifier,
     SystemIdentifier,
@@ -321,12 +323,6 @@ enum class TokenKind : std::uint16_t {
     UniqueKeyword,
     Unique0Keyword,
     UnsignedKeyword,
-    UntilKeyword,
-    UntilWithKeyword,
-    UntypedKeyword,
-    UseKeyword,
-    UWireKeyword,
-    VarKeyword,
     VectoredKeyword,
     VirtualKeyword,
     VoidKeyword,
