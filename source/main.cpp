@@ -15,9 +15,6 @@ int main(int argc, char* argv[]){
     string *psm = &SM.fd.filememo;
     cout<<*psm<<endl;
     cout<<"------------"<<endl;
-    cout<<SM.fd.filememo<<endl;
-    cout<<"------------"<<endl;
-    cout << "SM.fd.filesize:" << SM.fd.filememo.size() << endl;
     Lexer lex(psm, SM.fd.filesize);
     cout<<endl;
     Parser par(lex.getTokenVector());
