@@ -340,12 +340,6 @@ string_view toString(TokenKind kind) {
         case TokenKind::UniqueKeyword: return "UniqueKeyword";
         case TokenKind::Unique0Keyword: return "Unique0Keyword";
         case TokenKind::UnsignedKeyword: return "UnsignedKeyword";
-        case TokenKind::UntilKeyword: return "UntilKeyword";
-        case TokenKind::UntilWithKeyword: return "UntilWithKeyword";
-        case TokenKind::UntypedKeyword: return "UntypedKeyword";
-        case TokenKind::UseKeyword: return "UseKeyword";
-        case TokenKind::UWireKeyword: return "UWireKeyword";
-        case TokenKind::VarKeyword: return "VarKeyword";
         case TokenKind::VectoredKeyword: return "VectoredKeyword";
         case TokenKind::VirtualKeyword: return "VirtualKeyword";
         case TokenKind::VoidKeyword: return "VoidKeyword";

@@ -12,7 +12,6 @@ public:
     Lexer& operator=(const Lexer&) = delete;
     ~Lexer();
     void scanText();
-    static bool isKeyword(TokenKind kind);
     vector<Token> getTokenVector();
 private:
     vector<string> keywords;
