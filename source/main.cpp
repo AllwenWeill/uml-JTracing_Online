@@ -13,8 +13,6 @@ int main(int argc, char* argv[]){
     //cin >> text;
     //SourceManager SM(text);
     string *psm = &SM.fd.filememo;
-    cout<<*psm<<endl;
-    cout<<"------------"<<endl;
     Lexer lex(psm, SM.fd.filesize);
     cout<<endl;
     Parser par(lex.getTokenVector());

@@ -9,6 +9,10 @@ struct VariableInformation {
     string kind;
     string content = "";
 };
+/*struct ObjectInformation {
+    vector<int> refObjects;
+    int 
+};*/
 class Parser {
 public:
     Parser(vector<Token> tokenVector);
@@ -18,6 +22,7 @@ public:
     Token curToken;
     TokenKind curTokenKind;
     unordered_map<string, VariableInformation> VariableInfo_umap; //变量存储表
+    //unord
     unordered_set<TokenKind> Type_uset; //变量类型表
 private:
     VariableInformation VF; //该VF结构体需要不断被更新，生存周期直到Parser销毁

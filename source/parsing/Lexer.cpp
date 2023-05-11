@@ -12,7 +12,6 @@ Lexer::Lexer(const string *psm, unsigned long int indexOffset)
 //function: 扫描阶段： 主要负责完成一些不需要生成词法单元的简单处理，比如删除注释和将多个连续的空白字符压缩成一个字符，然后产生词素流
 void Lexer::scanText(){
     string tempStr;
-    cout<<*m_psm<<endl;
     while(!islastChar()){
         char tempCh = (*m_psm).at(offset_count);
         //cout<<"tempCh:"<<tempCh<<endl;
@@ -238,12 +237,12 @@ void Lexer::scanText(){
                 }
         }
     }
-    cout<<"test:打印keywords所有元素"<<endl;
+    /*cout << "test:打印keywords所有元素" << endl;
     for(string str : keywords){
         // for(auto ch : str)
         //     printf("%x ", ch);
         cout<<str<<" "<<endl;
-    }
+    }*/
     cout<<"TokenKind:------------"<<endl;
     for(auto k : tokenVector){
         cout<<k.getTokenStr()<<":"<<k.getTokenKindStr()<<"行号:"<<k.TL.m_tokenLine<<endl;
