@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#include <unordered_map>
 
 
 using namespace std;
@@ -17,7 +18,8 @@ public:
     FileData fd;
     SourceManager(fs::path& filepath);
     SourceManager(const string& codeText);
-    void readSource(fs::path& filepath);
+    void readsvSource(fs::path& filepath);
+    string readNormalSource(fs::path& filepath); //读取.h/.cpp文件
     void readSource(const string& codeText);
     ~SourceManager() {};
     bool scanFileDir();
@@ -27,5 +29,8 @@ private:
     fs::path m_fileOutputDirPath; //输出文件夹路径
     vector<string> m_filenames; //扫描到的input文件夹里的文件名
     vector<string> m_classnames; //扫描.h文件得到的类名
-    void filterClassName(string filename);
+    unordered_map<string, string> m_hfiles; //仅含.h头文件及其文本内容
+    unordered_map<string, string> m_cppfiles; //仅含.cpp头文件及其文本内容
+
+    void filterFileName(string filename);
 };
