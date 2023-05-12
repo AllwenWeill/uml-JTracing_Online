@@ -12,9 +12,9 @@ int main(int argc, char* argv[]){
     //string text = "int ;";
     //cin >> text;
     //SourceManager SM(text);
-    string *psm = &SM.fd.filememo;
+    /*string* psm = &SM.fd.filememo;
     Lexer lex(psm, SM.fd.filesize);
     cout<<endl;
-    Parser par(lex.getTokenVector());
+    Parser par(lex.getTokenVector());*/
     return 0;
 }
