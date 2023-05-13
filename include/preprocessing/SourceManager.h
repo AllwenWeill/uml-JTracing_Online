@@ -1,3 +1,5 @@
+#ifndef _SOURCEMANAGER_H
+#define _SOURCEMANAGER_H
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -23,6 +25,8 @@ public:
     void readSource(const string& codeText);
     ~SourceManager() {};
     bool scanFileDir();
+    unordered_map<string, string> gethFiles();
+    unordered_map<string, string> getcppFiles();
 private:
     fs::path m_filepath; //文件路径
     fs::path m_fileInputDirPath; //输入文件夹路径
@@ -34,3 +38,4 @@ private:
 
     void filterFileName(string filename);
 };
+#endif

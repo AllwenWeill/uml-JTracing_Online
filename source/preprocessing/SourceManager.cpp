@@ -27,17 +27,20 @@ bool SourceManager::scanFileDir() {
             m_filenames.emplace_back(fileName);
         }
     }
-    // 打印文件名
+    // debug: 打印文件名
+    cout << "<File names> " << endl;
     for (const auto& fileName : m_filenames) {
         std::cout << fileName << std::endl;
         filterFileName(fileName);
     }
+    cout << "-------------------------" << endl;
     for (const auto& [key, value] : m_hfiles) {
-        std::cout << key << " : " << value << std::endl;
+        std::cout << key << " : " << std::endl << value << std::endl;
     }
     for (const auto& [key, value] : m_cppfiles) {
-        std::cout << key << " : " << value << std::endl;
+        std::cout << key << " : " << std::endl << value << std::endl;
     }
+    cout << "-------------------------" << endl;
     if (m_filenames.empty())
         return false;
     return true;
@@ -86,6 +89,14 @@ string SourceManager::readNormalSource(fs::path& filepath) {
     }
     string filememo = string(buffer.begin(), buffer.end());
     return filememo;
+}
+
+unordered_map<string, string> SourceManager::gethFiles() {
+    return m_hfiles;
+}
+
+unordered_map<string, string> SourceManager::getcppFiles() {
+    return m_cppfiles;
 }
 
 // function: 读取源代码.sv文件
