@@ -13,7 +13,10 @@ public:
     ~Lexer();
     void scanText();
     vector<Token> getTokenVector();
+    string getClassName();
 private:
+    bool isClassName;
+    string m_className;
     vector<string> keywords;
     vector<Token> tokenVector;
     const string *m_psm; //指向文本指针的副本指针

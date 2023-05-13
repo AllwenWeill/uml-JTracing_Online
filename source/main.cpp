@@ -14,9 +14,13 @@ int main(int argc, char* argv[]){
     //cin >> text;
     vector<vector<Token>> hTokenFlows;
     vector<vector<Token>> cppTokenFlows;
+    vector<string> classNames;
     for (auto hFile : SM.gethFiles()) {
         Lexer lex(&hFile.second, hFile.second.size());
         hTokenFlows.emplace_back(lex.getTokenVector());
+        if (lex.getClassName() != "") {
+            classNames.emplace_back(lex.getClassName());
+        }
     }
     cout << "----------------------------------------------------" << endl;
     for (auto cppFile : SM.getcppFiles()) {
@@ -24,6 +28,10 @@ int main(int argc, char* argv[]){
         cppTokenFlows.emplace_back(lex.getTokenVector());
     }
     cout << "----------------------------------------------------" << endl;
+    cout << "classNames: ";
+    for (auto cn : classNames) {
+        cout << cn << ",";
+    }
     //SourceManager SM(text);
     /*string* psm = &SM.fd.filememo;
     Lexer lex(psm, SM.fd.filesize);
