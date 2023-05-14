@@ -375,6 +375,7 @@ string TokenKindtoString(TokenKind kind) {
 */
  string TokenKindtoString(TokenKind kind) {
    switch (kind) {
+    case TokenKind::MemberPointerAccess: return "MemberPointerAccess";
     case TokenKind::Unknown: return "Unknown";
     case TokenKind::EndOfFile: return "EndOfFile";
     case TokenKind::Identifier: return "Identifier";

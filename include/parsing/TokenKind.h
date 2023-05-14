@@ -2,6 +2,7 @@
 #define TOKENKIND_H
 #include "allinclude.h"
 enum class TokenKind : std::uint16_t {
+    MemberPointerAccess,
     Unknown,
     ProtectKeyword,
     RandomKeyword,
