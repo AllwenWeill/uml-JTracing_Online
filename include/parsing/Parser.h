@@ -48,6 +48,8 @@ private:
     std::shared_ptr<Always_combAST> ParseAlways_comb();
     std::shared_ptr<InitialAST> ParseInitial();
     std::shared_ptr<ForAST> ParseFor();
+    std::shared_ptr<ObjCallFuncPAST> ParseObjCallFuncP();
+    std::shared_ptr<ObjCallFuncAAST> ParseObjCallFuncA();
     void mainParser();
     void getNextToken();
     void buildBinopPrecedence();
