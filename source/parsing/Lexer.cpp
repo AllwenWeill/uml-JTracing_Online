@@ -91,6 +91,10 @@ void Lexer::scanText(){
                             tokenVector.push_back(create(TokenKind::DoubleMinus, lineNum, keywords.size() - 1, "--"));
                             advance();
                         }
+                        else if (nextCh == '>') {
+                            tokenVector.push_back(create(TokenKind::MemberPointerAccess, lineNum, keywords.size() - 1, "->"));
+                            advance();
+                        }
                         else {
                             tokenVector.push_back(create(TokenKind::Minus, lineNum, keywords.size() - 1, "-"));
                         }
@@ -234,6 +238,10 @@ void Lexer::scanText(){
                     tokenVector.push_back(create(TokenKind::At, lineNum, keywords.size() - 1, "@"));
                     advance();
                 }
+                else if (tempCh == '.') {
+                    tokenVector.push_back(create(TokenKind::Dot, lineNum, keywords.size() - 1, "."));
+                    advance();
+                }
                 else{
                     advance();
                 }
@@ -303,7 +311,7 @@ Lexer::~Lexer(){
     
 }
 bool isChar(const char &ch){
-    if((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == '.')
+    if((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_')
         return true;
     else
         return false;
@@ -347,7 +355,7 @@ void Lexer::scanLetter(){
         advance();
         char tempCh = (*m_psm).at(offset_count);
         //if(tempCh == '(') //可能需要加扫描D(x)这种情况
-        if(tempCh == ' ' || tempCh == 0x0a || !isChar(tempCh)){ //如果遇到空格或者换行
+        if(tempCh == ' ' || tempCh == 0x0a || (!isChar(tempCh) && !isNum(tempCh))){ //如果遇到空格或者换行
             keywords.push_back(tmpStr);
             TokenKind kind;
             if(lookupKeyword(tmpStr, kind)){ //说明是关键字
