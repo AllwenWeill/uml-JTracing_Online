@@ -159,6 +159,14 @@ std::shared_ptr<ExprAST> Parser::parsePrimary() { //解析初级表达式
     }
 }
 
+/*std::shared_ptr<ObjCallFuncPAST> Parser::ParseObjCallFuncP() {
+
+}
+
+std::shared_ptr<ObjCallFuncAAST> Parser::ParseObjCallFuncA() {
+
+}
+*/
 std::shared_ptr<ExprAST> Parser::ParseBitWide() {
     getNextToken();
     if (curTokenKind != TokenKind::IntegerLiteral) { //[]内第一个Token期待的是数字类型的常数

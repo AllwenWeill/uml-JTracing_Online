@@ -9,6 +9,10 @@ struct VariableInformation {
     string kind;
     string content = "";
 };
+/*struct ObjectInformation {
+    vector<int> refObjects;
+    int 
+};*/
 class Parser {
 public:
     Parser(vector<Token> tokenVector);
@@ -18,6 +22,7 @@ public:
     Token curToken;
     TokenKind curTokenKind;
     unordered_map<string, VariableInformation> VariableInfo_umap; //变量存储表
+    //unord
     unordered_set<TokenKind> Type_uset; //变量类型表
 private:
     VariableInformation VF; //该VF结构体需要不断被更新，生存周期直到Parser销毁
@@ -43,6 +48,8 @@ private:
     std::shared_ptr<Always_combAST> ParseAlways_comb();
     std::shared_ptr<InitialAST> ParseInitial();
     std::shared_ptr<ForAST> ParseFor();
+    std::shared_ptr<ObjCallFuncPAST> ParseObjCallFuncP();
+    std::shared_ptr<ObjCallFuncAAST> ParseObjCallFuncA();
     void mainParser();
     void getNextToken();
     void buildBinopPrecedence();

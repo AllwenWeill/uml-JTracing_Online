@@ -13,3 +13,5 @@
 #include "CmpExprAST.h"
 #include "InitialAST.h"
 #include "ForAST.h"
+#include "ObjCallFuncAAST.h"
+#include "ObjCallFuncPAST.h"

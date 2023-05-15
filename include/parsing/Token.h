@@ -22,5 +22,5 @@ private:
     string m_tokenString;
     string m_tokenkindStr;
 };
-string_view toString(TokenKind kind);
+string TokenKindtoString(TokenKind kind);
 #endif

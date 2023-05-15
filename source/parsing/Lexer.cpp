@@ -4,15 +4,16 @@ Lexer::Lexer(const string *psm, unsigned long int indexOffset)
     init_psm(psm),
     m_indexOffset(indexOffset)
 {
+    m_className = "";
     offset_count = 0;
     lineNum = 1;
     keywoedsCount = 0;
+    isClassName = false;
     scanText();
 }
 //function: 扫描阶段： 主要负责完成一些不需要生成词法单元的简单处理，比如删除注释和将多个连续的空白字符压缩成一个字符，然后产生词素流
 void Lexer::scanText(){
     string tempStr;
-    cout<<*m_psm<<endl;
     while(!islastChar()){
         char tempCh = (*m_psm).at(offset_count);
         //cout<<"tempCh:"<<tempCh<<endl;
@@ -88,6 +89,10 @@ void Lexer::scanText(){
                         char nextCh = (*m_psm).at(offset_count + 1);
                         if (nextCh == '-') {
                             tokenVector.push_back(create(TokenKind::DoubleMinus, lineNum, keywords.size() - 1, "--"));
+                            advance();
+                        }
+                        else if (nextCh == '>') {
+                            tokenVector.push_back(create(TokenKind::MemberPointerAccess, lineNum, keywords.size() - 1, "->"));
                             advance();
                         }
                         else {
@@ -233,17 +238,21 @@ void Lexer::scanText(){
                     tokenVector.push_back(create(TokenKind::At, lineNum, keywords.size() - 1, "@"));
                     advance();
                 }
+                else if (tempCh == '.') {
+                    tokenVector.push_back(create(TokenKind::Dot, lineNum, keywords.size() - 1, "."));
+                    advance();
+                }
                 else{
                     advance();
                 }
         }
     }
-    cout<<"test:打印keywords所有元素"<<endl;
+    /*cout << "test:打印keywords所有元素" << endl;
     for(string str : keywords){
         // for(auto ch : str)
         //     printf("%x ", ch);
         cout<<str<<" "<<endl;
-    }
+    }*/
     cout<<"TokenKind:------------"<<endl;
     for(auto k : tokenVector){
         cout<<k.getTokenStr()<<":"<<k.getTokenKindStr()<<"行号:"<<k.TL.m_tokenLine<<endl;
@@ -302,7 +311,7 @@ Lexer::~Lexer(){
     
 }
 bool isChar(const char &ch){
-    if((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == '.')
+    if((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_')
         return true;
     else
         return false;
@@ -346,14 +355,21 @@ void Lexer::scanLetter(){
         advance();
         char tempCh = (*m_psm).at(offset_count);
         //if(tempCh == '(') //可能需要加扫描D(x)这种情况
-        if(tempCh == ' ' || tempCh == 0x0a || !isChar(tempCh)){ //如果遇到空格或者换行
+        if(tempCh == ' ' || tempCh == 0x0a || (!isChar(tempCh) && !isNum(tempCh))){ //如果遇到空格或者换行
             keywords.push_back(tmpStr);
             TokenKind kind;
             if(lookupKeyword(tmpStr, kind)){ //说明是关键字
+                if (kind == TokenKind::ClassKeyword) {
+                    isClassName = true;
+                }
                 tokenVector.push_back(create(kind, lineNum, keywords.size()-1, tmpStr)); //初步创建Token
             }
             else{ //说明是变量名或者错误(待完善匹配错误)，没有区分标识符或者错误关键字
                 tokenVector.push_back(create(TokenKind::Identifier, lineNum, keywords.size()-1, tmpStr)); 
+                if (isClassName) { //如果该变量标识符前面是class关键字，则说明后面的是类名
+                    m_className = tmpStr;
+                    isClassName = false;
+                }
             }
             return ;
         }
@@ -414,6 +430,10 @@ bool Lexer::lookupKeyword(string targetStr, TokenKind &kind){ //查找目标子字符串
     }
     return false;
 } 
+
+string Lexer::getClassName() {
+    return m_className;
+}
 
 vector<Token> Lexer::getTokenVector(){
     return tokenVector;
