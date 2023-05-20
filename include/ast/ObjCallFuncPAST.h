@@ -2,9 +2,10 @@
 #define _OBJCALLFUNCPAST_H
 //example: a.func();
 class ObjCallFuncPAST {
-
+	string objName;
+	string callFunc;
 public:
-	ObjCallFuncPAST();
-	~ObjCallFuncPAST();
+	ObjCallFuncPAST() {};
+	~ObjCallFuncPAST() {};
 };
 #endif

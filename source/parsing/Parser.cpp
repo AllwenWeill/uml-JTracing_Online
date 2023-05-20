@@ -1,11 +1,14 @@
 #include "Parser.h"
-Parser::Parser(vector<Token> tokenVector)
+Parser::Parser(vector<Token> tokenVector, vector<string> classNames)
     :m_tokenVector(tokenVector),
-    variableTypeFlag(TokenKind::NullKeyword)
+    variableTypeFlag(TokenKind::NullKeyword),
+    m_classNames(classNames),
+    m_classCounter(0)
 {
     m_offset = 0;
     buildTypeUset();
     buildBinopPrecedence();
+    buildObjInstantiationUmap();
     if (m_tokenVector.size() != 0) {
         curToken = m_tokenVector[0];
         curTokenKind = curToken.getTokenKind();
@@ -39,6 +42,12 @@ void Parser::mainParser() {
             break;
         case TokenKind::InitialKeyword:
             handInitial();
+            break;
+        case TokenKind::Identifier:
+            handlObj();
+            break;
+        case TokenKind::IncludeKeyword:
+            handInclude();
             break;
         default:
             if(Type_uset.count(curTokenKind)) //如果在Type表中，则说明当前token为int等类型关键字，则跳过
@@ -526,6 +535,12 @@ void Parser::buildTypeUset() {
     Type_uset.insert(TokenKind::PosEdgeKeyword);
 }
 
+void Parser::buildObjInstantiationUmap() {
+    for (auto className : m_classNames) { //init
+        ObjInstantiation_umap[className] = {};
+    }
+}
+
 int Parser::GetTokPrecedence() {
     string curStr = curToken.getTokenStr();
     if (curStr == "=") {
@@ -597,6 +612,64 @@ void Parser::handlAlways_comb() {
     }
 }
 
+void Parser::handlObj() {
+    Token nextToken = m_tokenVector[m_offset];
+    TokenKind nextTokenKind = nextToken.getTokenKind();
+    Token n_nextToken = m_tokenVector[m_offset + 1]; //next的next
+    TokenKind n_nextTokenKind = n_nextToken.getTokenKind();
+    //case1: A a();
+    if (nextTokenKind == TokenKind::Identifier) {
+        ObjInstantiation_umap[curToken.getTokenStr()].emplace_back(nextToken.getTokenStr()); //add ObjInstantiation_umap
+        while (curTokenKind != TokenKind::Semicolon) {
+            getNextToken();
+        }
+        getNextToken(); //eat ;
+    }
+    //case2: A *a = new A();
+    else if (nextTokenKind == TokenKind::Star) {
+        ObjInstantiation_umap[curToken.getTokenStr()].emplace_back(n_nextToken.getTokenStr()); //add ObjInstantiation_umap
+        while (curTokenKind != TokenKind::Semicolon) {
+            getNextToken();
+        }
+        getNextToken(); //eat ;
+    }
+    //case3: a.work();
+    else if (nextTokenKind == TokenKind::Dot) {
+        //当前curToken是a,需要通过a找爹
+        FuncCallInformation FC;
+        FC.invokeClassName = findClassName(curToken.getTokenStr());
+        getNextToken(); //eat Indentifier,like 'a'
+        getNextToken(); //eat Dot;
+        FC.FuncName = curToken.getTokenStr();
+        FuncCallInformation_umap[getClassCounter()] = FC;
+        getNextToken(); //eat Indentifier, like 'working'
+        getNextToken(); //eat (
+        getNextToken(); //eat )
+        getNextToken(); //eat ;
+        cout << "parseing obj call function..." << endl;
+        cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
+    }
+    //case4: a->work();
+    else if (nextTokenKind == TokenKind::MemberPointerAccess) {
+        //当前curToken是a,需要通过a找爹
+        FuncCallInformation FC;
+        FC.invokeClassName = findClassName(curToken.getTokenStr());
+        getNextToken(); //eat Indentifier,like 'a'
+        getNextToken(); //eat '->'
+        FC.FuncName = curToken.getTokenStr();
+        FuncCallInformation_umap[getClassCounter()] = FC;
+        getNextToken(); //eat Indentifier, like 'working'
+        getNextToken(); //eat (
+        getNextToken(); //eat )
+        getNextToken(); //eat ;
+        cout << "parseing obj call function..." << endl;
+        cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
+    }
+    else {
+        ParseExpression();
+    }
+}
+
 void Parser::handInitial() {
     getNextToken();
     if (ParseInitial()) {
@@ -605,6 +678,16 @@ void Parser::handInitial() {
     else {
         getNextToken();
     }
+}
+
+void Parser::handInclude() {
+    getNextToken(); //eat include;
+    getNextToken(); //eat "";
+    getNextToken();
+}
+
+int Parser::getClassCounter() {
+    return ++m_classCounter;
 }
 
 void Parser::showErrorInformation() {
@@ -628,4 +711,15 @@ void Parser::showVariableInformation() {
     for (auto varInfo : VariableInfo_umap) {
         cout <<"<" << varInfo.second.name << ">-----<" << varInfo.second.kind << ">" << varInfo.second.content << endl;
     }
+}
+
+string Parser::findClassName(string targetStr) {
+    for (auto obj : ObjInstantiation_umap) {
+        for (int i = 0; i < obj.second.size(); i++) {
+            if (targetStr == obj.second[i]) {
+                return obj.first;
+            }
+        }
+    }
+    return "error";
 }
