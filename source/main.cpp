@@ -32,6 +32,8 @@ int main(int argc, char* argv[]){
     for (auto cn : classNames) {
         cout << cn << ",";
     }
+    cout << "----------------------------------------------------" << endl;
+    Parser par(cppTokenFlows[0], classNames);
     //SourceManager SM(text);
     /*string* psm = &SM.fd.filememo;
     Lexer lex(psm, SM.fd.filesize);
