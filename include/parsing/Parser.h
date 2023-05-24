@@ -4,26 +4,15 @@
 #include "LogError.h"
 #include "LogParser.h"
 #include "allAST.h"
+#include "ClassList.h"
 struct VariableInformation {
     string name;
     string kind;
     string content = "";
 };
-struct FuncCallInformation {
-    string invokeClassName;
-    string FuncName;
-    string callClassName; //爹
-    int selfCall = 0;
-    vector<int> loopCall;
-    vector<int> childSequence;
-    vector<int> alts_start;
-    vector<int> else_start;
-    vector<int> alts_end;
-    vector<int> else_end;
-};
 class Parser {
 public:
-    Parser(vector<Token> tokenVector, vector<string> classNames);
+    Parser(vector<Token> tokenVector, vector<string> classNames, ClassList *pCList);
     ~Parser();
     LogError LE;
     LogParser LogP;
@@ -31,13 +20,8 @@ public:
     TokenKind curTokenKind;
     unordered_map<string, VariableInformation> VariableInfo_umap; //变量存储表
     unordered_set<TokenKind> Type_uset; //变量类型表
-    unordered_map<int, FuncCallInformation> FuncCallInformation_umap;
-    unordered_map<int, vector<string>> Loop_umap;
-    unordered_map<int, vector<string>> Alt_umap;
-    unordered_map<string, vector<int>> ClassActivation_umap;
-
-
 private:
+    ClassList* m_pCList;
     VariableInformation VF; //该VF结构体需要不断被更新，生存周期直到Parser销毁
     unsigned long int m_offset;
     vector<string> m_classNames;
@@ -45,7 +29,6 @@ private:
     unordered_map<string, int> BinopPrecedence_umap;
     vector<Token> m_tokenVector;
     unordered_map<string, vector<string>> ObjInstantiation_umap; //类实例化对应表：A-a1,a2; B-b1,b2;
-    int m_classCounter; 
     std::shared_ptr<ExprAST> parsePrimary();
     std::shared_ptr<DefinitionAST> parseModule();
     std::shared_ptr<PrototypeAST> ParseModulePrototype();
@@ -79,6 +62,7 @@ private:
     void handInitial();
     void handlObj();
     void handInclude();
+    void handlFunc();
     void showErrorInformation();
     void showParserInformation();
     void showVariableInformation();

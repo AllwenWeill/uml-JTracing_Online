@@ -1,9 +1,9 @@
 #include "Parser.h"
-Parser::Parser(vector<Token> tokenVector, vector<string> classNames)
+Parser::Parser(vector<Token> tokenVector, vector<string> classNames, ClassList* pCList)
     :m_tokenVector(tokenVector),
     variableTypeFlag(TokenKind::NullKeyword),
     m_classNames(classNames),
-    m_classCounter(0)
+    m_pCList(pCList)
 {
     m_offset = 0;
     buildTypeUset();
@@ -50,8 +50,11 @@ void Parser::mainParser() {
             handInclude();
             break;
         default:
-            if(Type_uset.count(curTokenKind)) //如果在Type表中，则说明当前token为int等类型关键字，则跳过
-                getNextToken();
+            if (Type_uset.count(curTokenKind)) { //如果在Type表中，则说明当前token为int等类型关键字
+                getNextToken(); //eat type
+                handlFunc();
+                
+            }
             ParseExpression();
             break;
         }
@@ -524,15 +527,14 @@ void Parser::buildBinopPrecedence() {
 
 void Parser::buildTypeUset() {
     Type_uset.insert(TokenKind::IntKeyword);
-    Type_uset.insert(TokenKind::RegKeyword);
-    Type_uset.insert(TokenKind::WireKeyword);
+    Type_uset.insert(TokenKind::StringKeyword);
+    Type_uset.insert(TokenKind::BoolKeyword);
     Type_uset.insert(TokenKind::ShortIntKeyword);
     Type_uset.insert(TokenKind::LongIntKeyword);
-    Type_uset.insert(TokenKind::BitKeyword);
-    Type_uset.insert(TokenKind::ByteKeyword);
-    Type_uset.insert(TokenKind::IntegerKeyword);
-    Type_uset.insert(TokenKind::LogicKeyword);
-    Type_uset.insert(TokenKind::PosEdgeKeyword);
+    Type_uset.insert(TokenKind::CharKeyword);
+    Type_uset.insert(TokenKind::VoidKeyword);
+    Type_uset.insert(TokenKind::FloatKeyword);
+    Type_uset.insert(TokenKind::DoubleKeyword);
 }
 
 void Parser::buildObjInstantiationUmap() {
@@ -612,6 +614,23 @@ void Parser::handlAlways_comb() {
     }
 }
 
+void Parser::handlFunc() {
+    cout << "Parsing function:" << curToken.getTokenStr() << "()..." << endl;
+    Token nextToken = m_tokenVector[m_offset];
+    TokenKind nextTokenKind = nextToken.getTokenKind();
+    if (nextTokenKind != TokenKind::OpenParenthesis) { //如果此时下一个Token是'('，则说明此时是一个函数
+        return;
+    }
+    while (curTokenKind != TokenKind::CloseParenthesis) { //跳过func()括号中参数，对于生成uml时序图意义不大(暂时不考虑参数设计函数调用情况)
+        getNextToken();  //eat
+    }
+    getNextToken(); //eat )
+    getNextToken(); //eat {
+    while (curTokenKind != TokenKind::CloseBrace) {
+        mainParser();
+    }
+}
+
 void Parser::handlObj() {
     Token nextToken = m_tokenVector[m_offset];
     TokenKind nextTokenKind = nextToken.getTokenKind();
@@ -641,7 +660,8 @@ void Parser::handlObj() {
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat Dot;
         FC.FuncName = curToken.getTokenStr();
-        FuncCallInformation_umap[getClassCounter()] = FC;
+        //FuncCallInformation_umap[getClassCounter()] = FC;
+        m_pCList->addFuncCallInfo(FC);
         getNextToken(); //eat Indentifier, like 'working'
         getNextToken(); //eat (
         getNextToken(); //eat )
@@ -657,13 +677,14 @@ void Parser::handlObj() {
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat '->'
         FC.FuncName = curToken.getTokenStr();
-        FuncCallInformation_umap[getClassCounter()] = FC;
+        //FuncCallInformation_umap[getClassCounter()] = FC;
+        m_pCList->addFuncCallInfo(FC);
         getNextToken(); //eat Indentifier, like 'working'
         getNextToken(); //eat (
         getNextToken(); //eat )
         getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
-        cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
+        cout << "---->" << FC.invokeClassName << "->" << FC.FuncName << "()" << endl;
     }
     else {
         ParseExpression();
@@ -684,10 +705,6 @@ void Parser::handInclude() {
     getNextToken(); //eat include;
     getNextToken(); //eat "";
     getNextToken();
-}
-
-int Parser::getClassCounter() {
-    return ++m_classCounter;
 }
 
 void Parser::showErrorInformation() {
