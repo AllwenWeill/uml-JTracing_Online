@@ -19,6 +19,22 @@ void ClassList::addClassActivationInfo() {
 
 }
 
+unordered_map<int, FuncCallInformation> ClassList::getFuncCallInfo() {
+	return FuncCallInformation_umap;
+}
+
+unordered_map<int, vector<string>> ClassList::getLoopInfo() {
+	return Loop_umap;
+}
+
+unordered_map<int, vector<string>> ClassList::getAltInfo() {
+	return Alt_umap;
+}
+
+unordered_map<string, vector<int>> ClassList::getClassActivationInfo() {
+	return ClassActivation_umap;
+}
+
 int ClassList::getClassCounter() {
 	return ++m_classCounter;
 }

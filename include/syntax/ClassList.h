@@ -26,6 +26,10 @@ public:
     void addLoopInfo();
     void addAltInfo();
     void addClassActivationInfo();
+    unordered_map<int, FuncCallInformation> getFuncCallInfo();
+    unordered_map<int, vector<string>> getLoopInfo();
+    unordered_map<int, vector<string>> getAltInfo();
+    unordered_map<string, vector<int>> getClassActivationInfo();
 	ClassList();
 	~ClassList();
 };
