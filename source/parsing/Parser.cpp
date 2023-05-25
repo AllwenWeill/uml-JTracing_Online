@@ -1,6 +1,8 @@
 #include "Parser.h"
-Parser::Parser(vector<Token> tokenVector, vector<string> classNames, ClassList* pCList)
-    :m_tokenVector(tokenVector),
+Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList)
+    :m_hTokenFlows(hTokenFlows),
+    m_cppTokenFlows(cppTokenFlows),
+    m_tokenVector(tokenVector),
     variableTypeFlag(TokenKind::NullKeyword),
     m_classNames(classNames),
     m_pCList(pCList)
