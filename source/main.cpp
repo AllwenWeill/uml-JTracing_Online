@@ -3,6 +3,7 @@
 #include "LogError.h"
 #include "Parser.h"
 #include "allinclude.h"
+#include "ClassList.h"
 
 int main(int argc, char* argv[]){
     //cout<<"输入.sv文件路径:";
@@ -32,8 +33,11 @@ int main(int argc, char* argv[]){
     for (auto cn : classNames) {
         cout << cn << ",";
     }
+    cout << endl;
     cout << "----------------------------------------------------" << endl;
-    Parser par(cppTokenFlows[0], classNames);
+    ClassList CList;
+    ClassList* pCList = &CList;
+    Parser par(cppTokenFlows[0], classNames, pCList);
     //SourceManager SM(text);
     /*string* psm = &SM.fd.filememo;
     Lexer lex(psm, SM.fd.filesize);
