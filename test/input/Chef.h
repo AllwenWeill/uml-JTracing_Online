@@ -7,9 +7,7 @@ public:
 	string getChefName() {
 		return m_chefName;
 	}
-	void cooking() {
-		std::cout << "The chef is cooking..." << std::endl;
-	}
+	void cooking();
 private:
 	string m_chefName;
 };

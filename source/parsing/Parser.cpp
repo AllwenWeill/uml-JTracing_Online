@@ -670,6 +670,8 @@ void Parser::handlObj() {
         getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
+        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
+        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList);
     }
     //case4: a->work();
     else if (nextTokenKind == TokenKind::MemberPointerAccess) {
@@ -741,4 +743,37 @@ string Parser::findClassName(string targetStr) {
         }
     }
     return "error";
+}
+
+/*
+function: 找到a.work()中a的class的.cpp文件词法分析后的tokenflow，筛选出其中work()的token
+param: 目标函数名，目标.cpp文件名
+return: 筛选得到的tokenflow
+*/
+vector<Token> Parser::filterTokenFlow(string targetFuncName, string targetfFleName) {
+    vector<Token> MresTokenFlow;
+    vector<Token> resTokenFlow;
+    for (int i = 0; i < m_cppTokenFlows[targetfFleName].size(); i++) { //遍历扫描该.cpp文件的整个tokenflow
+        Token nextFourToken;
+        Token curToken = m_cppTokenFlows[targetfFleName][i];
+        if (i <= m_cppTokenFlows[targetfFleName].size() - 4) {
+            nextFourToken = m_cppTokenFlows[targetfFleName][i+4];
+        }
+        //vector<Token> resTokenFlow;
+        if (Type_uset.count(curToken.getTokenKind()) && nextFourToken.getTokenStr() == targetFuncName) { //找到目标函数token位置
+            for (int j = i; j < m_cppTokenFlows[targetfFleName].size(); j++) {
+                Token tmpToken = m_cppTokenFlows[targetfFleName][j];
+                //vector<Token> resTokenFlow;
+                //resTokenFlow.push_back(create(TokenKind::VoidKeyword, 1, 1, "void"));
+                MresTokenFlow.push_back(tmpToken);
+                 if (m_cppTokenFlows[targetfFleName][j].getTokenKind() == TokenKind::CloseBrace) {
+                    i++;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    resTokenFlow = MresTokenFlow; //由于编译时符号表可能出现了问题产生bug，故此脱裤子放屁
+    return resTokenFlow;
 }
