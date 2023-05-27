@@ -13,12 +13,13 @@ int main(int argc, char* argv[]){
     SourceManager SM(fp);
     //string text = "int ;";
     //cin >> text;
-    vector<vector<Token>> hTokenFlows;
-    vector<vector<Token>> cppTokenFlows;
+    unordered_map<string, vector<Token>> hTokenFlows;
+    unordered_map<string, vector<Token>> cppTokenFlows;
     vector<string> classNames;
     for (auto hFile : SM.gethFiles()) {
         Lexer lex(&hFile.second, hFile.second.size());
-        hTokenFlows.emplace_back(lex.getTokenVector());
+        cout << hFile.first << endl;
+        hTokenFlows[hFile.first] = lex.getTokenVector();
         if (lex.getClassName() != "") {
             classNames.emplace_back(lex.getClassName());
         }
@@ -26,7 +27,7 @@ int main(int argc, char* argv[]){
     cout << "----------------------------------------------------" << endl;
     for (auto cppFile : SM.getcppFiles()) {
         Lexer lex(&cppFile.second, cppFile.second.size());
-        cppTokenFlows.emplace_back(lex.getTokenVector());
+        cppTokenFlows[cppFile.first] = lex.getTokenVector();
     }
     cout << "----------------------------------------------------" << endl;
     cout << "classNames: ";
@@ -37,7 +38,7 @@ int main(int argc, char* argv[]){
     cout << "----------------------------------------------------" << endl;
     ClassList CList;
     ClassList* pCList = &CList;
-    Parser par(cppTokenFlows[0], classNames, pCList);
+    Parser par(hTokenFlows, cppTokenFlows, cppTokenFlows["Actor.cpp"], classNames, pCList);
     //SourceManager SM(text);
     /*string* psm = &SM.fd.filememo;
     Lexer lex(psm, SM.fd.filesize);
