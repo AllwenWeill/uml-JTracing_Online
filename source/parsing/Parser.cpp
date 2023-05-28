@@ -617,8 +617,9 @@ void Parser::handlAlways_comb() {
 }
 
 void Parser::handlFunc() {
-    cout << "Parsing function:" << curToken.getTokenStr() << "()..." << endl;
+    cout << "Parsing function: " << curToken.getTokenStr()<<" ";
     Token nextToken = m_tokenVector[m_offset];
+    cout<<nextToken.getTokenStr() << "()..." << endl;
     TokenKind nextTokenKind = nextToken.getTokenKind();
     if (nextTokenKind != TokenKind::OpenParenthesis) { //如果此时下一个Token是'('，则说明此时是一个函数
         return;
