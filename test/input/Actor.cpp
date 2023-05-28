@@ -4,4 +4,4 @@
 	CE.cooking();
 	Chef* CE2 = new Chef();
 	CE2->getChefName();
-	getActorNumber();
+	getActorNumber(a);

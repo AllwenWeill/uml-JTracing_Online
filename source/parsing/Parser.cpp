@@ -147,6 +147,8 @@ std::shared_ptr<ExprAST> Parser::parsePrimary() { //解析初级表达式
         getNextToken();//eat op
         return std::move(V);
     }
+    case TokenKind::CloseBrace:
+        return nullptr;
     }
     getNextToken();
     switch (curTokenKind) {
@@ -479,8 +481,11 @@ std::shared_ptr<ExprAST> Parser::ParseIdentifierExpr(TokenKind varType) {
 
 std::shared_ptr<ExprAST> Parser::ParseExpression() {
     auto LHS = parsePrimary();
-    if (!LHS)
+    if (!LHS) {
+        if(curTokenKind != TokenKind::CloseBrace)
+            getNextToken();
         return nullptr;
+    }
     else if (curTokenKind == TokenKind::EndKeyword || curTokenKind == TokenKind::Semicolon || curTokenKind == TokenKind::CloseParenthesis)
         return LHS;
     return ParseBinOpRHS(0, std::move(LHS));
@@ -619,9 +624,17 @@ void Parser::handlAlways_comb() {
 void Parser::handlFunc() {
     cout << "Parsing function: " << curToken.getTokenStr()<<" ";
     Token nextToken = m_tokenVector[m_offset];
-    cout<<nextToken.getTokenStr() << "()..." << endl;
     TokenKind nextTokenKind = nextToken.getTokenKind();
-    if (nextTokenKind != TokenKind::OpenParenthesis) { //如果此时下一个Token是'('，则说明此时是一个函数
+    if (nextTokenKind == TokenKind::Identifier && isClassName(nextToken.getTokenStr())) {
+        cout << nextToken.getTokenStr() << "::";
+        getNextToken(); //eat ClassName
+        getNextToken(); //eat ':'
+        getNextToken(); //eat ';'
+        getNextToken(); //eat 
+    }
+    cout << curToken.getTokenStr() << "()..." << endl;
+    getNextToken(); //eat Identifier
+    if (curTokenKind != TokenKind::OpenParenthesis) { //如果此时下一个Token是'('，则说明此时是一个函数
         return;
     }
     while (curTokenKind != TokenKind::CloseParenthesis) { //跳过func()括号中参数，对于生成uml时序图意义不大(暂时不考虑参数设计函数调用情况)
@@ -777,4 +790,12 @@ vector<Token> Parser::filterTokenFlow(string targetFuncName, string targetfFleNa
     }
     resTokenFlow = MresTokenFlow; //由于编译时符号表可能出现了问题产生bug，故此脱裤子放屁
     return resTokenFlow;
+}
+
+bool Parser::isClassName(string name) {
+    for (auto i : m_classNames) {
+        if (i == name)
+            return true;
+    }
+    return false;
 }

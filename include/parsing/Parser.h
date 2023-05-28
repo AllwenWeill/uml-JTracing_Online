@@ -70,4 +70,5 @@ private:
     void showVariableInformation();
     string findClassName(string targetStr); //遍历ObjInstantiation_umap，通过a找其class名A
     vector<Token> filterTokenFlow(string targetFuncName, string targetfFleName);
+    bool isClassName(string name);
 };
