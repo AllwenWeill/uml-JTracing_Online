@@ -1,11 +1,12 @@
 #include "Parser.h"
-Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList)
+Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName)
     :m_hTokenFlows(hTokenFlows),
     m_cppTokenFlows(cppTokenFlows),
     m_tokenVector(tokenVector),
     variableTypeFlag(TokenKind::NullKeyword),
     m_classNames(classNames),
-    m_pCList(pCList)
+    m_pCList(pCList),
+    m_curFileName(curFileName)
 {
     m_offset = 0;
     buildTypeUset();
@@ -19,13 +20,14 @@ Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<s
 }
 
 Parser::~Parser() {
-    showParserInformation();
-    showErrorInformation();
-    showVariableInformation();
+    //showParserInformation();
+    //showErrorInformation();
+    //showVariableInformation();
 }
 
 void Parser::mainParser() {
-    while(m_offset < m_tokenVector.size() - 1) {
+    int tmpSize = m_tokenVector.size() - 1;
+    while(m_offset <= tmpSize && m_tokenVector.size() != 0) {
         //cout << "ready> "<<endl;
         switch (curTokenKind) {
         case TokenKind::ModuleKeyword:
@@ -648,6 +650,20 @@ void Parser::handlFunc() {
 }
 
 void Parser::handlObj() {
+    if (isFuncName(curToken.getTokenStr())) { //work()
+        FuncCallInformation FC;
+        FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size()-3);
+        FC.FuncName = curToken.getTokenStr();
+        cout << "parseing internal function..." << endl;
+        cout << "---->" << FC.FuncName << "()" << endl;
+        while (curTokenKind != TokenKind::Semicolon) {
+            getNextToken();
+        }
+        getNextToken(); //eat ;
+        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
+        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        return;
+    }
     Token nextToken = m_tokenVector[m_offset];
     TokenKind nextTokenKind = nextToken.getTokenKind();
     Token n_nextToken = m_tokenVector[m_offset + 1]; //next的next
@@ -678,14 +694,14 @@ void Parser::handlObj() {
         FC.FuncName = curToken.getTokenStr();
         //FuncCallInformation_umap[getClassCounter()] = FC;
         m_pCList->addFuncCallInfo(FC);
-        getNextToken(); //eat Indentifier, like 'working'
-        getNextToken(); //eat (
-        getNextToken(); //eat )
+        while (curTokenKind != TokenKind::Semicolon) {
+            getNextToken();
+        }
         getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
-        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList);
+        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
     }
     //case4: a->work();
     else if (nextTokenKind == TokenKind::MemberPointerAccess) {
@@ -697,12 +713,14 @@ void Parser::handlObj() {
         FC.FuncName = curToken.getTokenStr();
         //FuncCallInformation_umap[getClassCounter()] = FC;
         m_pCList->addFuncCallInfo(FC);
-        getNextToken(); //eat Indentifier, like 'working'
-        getNextToken(); //eat (
-        getNextToken(); //eat )
+        while (curTokenKind != TokenKind::Semicolon) {
+            getNextToken();
+        }
         getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "->" << FC.FuncName << "()" << endl;
+        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
+        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
     }
     else {
         ParseExpression();
@@ -796,6 +814,16 @@ bool Parser::isClassName(string name) {
     for (auto i : m_classNames) {
         if (i == name)
             return true;
+    }
+    return false;
+}
+
+bool Parser::isFuncName(string targetStr) {
+    string hFile = m_curFileName.substr(0, m_curFileName.size() - 3) + "h";
+    for (auto i : m_hTokenFlows[hFile]) {
+        if (i.getTokenStr() == targetStr) { //可增加条件限制，保障健壮性
+            return true;
+        }
     }
     return false;
 }
