@@ -20,14 +20,14 @@ Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<s
 }
 
 Parser::~Parser() {
-    //showParserInformation();
+    showParserInformation();
     //showErrorInformation();
     //showVariableInformation();
 }
 
 void Parser::mainParser() {
     int tmpSize = m_tokenVector.size() - 1;
-    while(m_offset <= tmpSize && m_tokenVector.size() != 0) {
+    while(m_offset <= tmpSize && m_tokenVector.size() != 0) { //warning:此处m_offset是无符号类型，与int类型比较会使tmpSize也统一为无符号类型，因此如果tmpSize<0时会转换成最大数，故需要加一步判断
         //cout << "ready> "<<endl;
         switch (curTokenKind) {
         case TokenKind::ModuleKeyword:
@@ -59,6 +59,7 @@ void Parser::mainParser() {
                 handlFunc();
                 
             }
+            getNextToken();
             ParseExpression();
             break;
         }
@@ -81,6 +82,30 @@ std::shared_ptr<ExprAST> Parser::parsePrimary() { //解析初级表达式
     case TokenKind::IntKeyword:
         LogP.addnote("->parsing a IntVariable...");
         variableTypeFlag = TokenKind::IntKeyword;
+        break;
+    case TokenKind::DoubleKeyword:
+        LogP.addnote("->parsing a DoubleVariable...");
+        variableTypeFlag = TokenKind::DoubleKeyword;
+        break;
+    case TokenKind::CharKeyword:
+        LogP.addnote("->parsing a CharVariable...");
+        variableTypeFlag = TokenKind::CharKeyword;
+        break;
+    case TokenKind::StringKeyword:
+        LogP.addnote("->parsing a StringVariable...");
+        variableTypeFlag = TokenKind::StringKeyword;
+        break;
+    case TokenKind::VoidKeyword:
+        LogP.addnote("->parsing a VoidVariable...");
+        variableTypeFlag = TokenKind::VoidKeyword;
+        break;
+    case TokenKind::BoolKeyword:
+        LogP.addnote("->parsing a BoolVariable...");
+        variableTypeFlag = TokenKind::BoolKeyword;
+        break;
+    case TokenKind::FloatKeyword:
+        LogP.addnote("->parsing a FloatVariable...");
+        variableTypeFlag = TokenKind::FloatKeyword;
         break;
     case TokenKind::RegKeyword:
         LogP.addnote("->parsing a RegVariable...");
@@ -450,7 +475,13 @@ std::shared_ptr<ExprAST> Parser::ParseIdentifierExpr(TokenKind varType) {
     case TokenKind::ByteKeyword:
     case TokenKind::IntegerKeyword:
     case TokenKind::RegKeyword:
-    case TokenKind::PosEdgeKeyword:{
+    case TokenKind::PosEdgeKeyword:
+    case TokenKind::StringKeyword:
+    case TokenKind::BoolKeyword:
+    case TokenKind::CharKeyword:
+    case TokenKind::VoidKeyword:
+    case TokenKind::FloatKeyword:
+    case TokenKind::DoubleKeyword:{
         if (VariableInfo_umap.count(IdName)) { //如果该标识符已经存在，则说明重复定义
             LE.addnote("previous definition here", curToken.TL.m_tokenLine);
             return nullptr;
@@ -637,6 +668,10 @@ void Parser::handlFunc() {
     cout << curToken.getTokenStr() << "()..." << endl;
     getNextToken(); //eat Identifier
     if (curTokenKind != TokenKind::OpenParenthesis) { //如果此时下一个Token是'('，则说明此时是一个函数
+        --m_offset;
+        curToken = m_tokenVector[--m_offset];
+        curTokenKind = curToken.getTokenKind();
+        cout << "-->Not a Funciton...";
         return;
     }
     while (curTokenKind != TokenKind::CloseParenthesis) { //跳过func()括号中参数，对于生成uml时序图意义不大(暂时不考虑参数设计函数调用情况)

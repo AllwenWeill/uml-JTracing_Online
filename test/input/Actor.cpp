@@ -1,7 +1,8 @@
-#include "Actor.h"
-
-	Chef CE;
-	CE.cooking();
-	Chef* CE2 = new Chef();
-	CE2->getChefName();
-	getActorNum(a);
+int a = 0;
+if (a == 5)
+{
+	getNumber(a);
+}
+else {
+	a = 1;
+}
