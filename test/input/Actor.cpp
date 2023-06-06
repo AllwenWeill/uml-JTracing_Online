@@ -1,8 +1,13 @@
-int a = 0;
-if (a == 5)
-{
-	getNumber(a);
+#include "Actor.h"
+int a = 5;
+if (a == 5) {
+	getActorNum(a);
 }
 else {
-	a = 1;
+	Chef CE;
+	CE.cooking();
 }
+	
+	Chef* CE2 = new Chef();
+	CE2->getChefName();
+	

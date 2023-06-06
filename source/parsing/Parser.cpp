@@ -59,6 +59,9 @@ void Parser::mainParser() {
                 handlFunc();
                 
             }
+            if (curTokenKind == TokenKind::IfKeyword || curTokenKind == TokenKind::WhileKeyword || curTokenKind == TokenKind::ElseKeyword || curTokenKind == TokenKind::ForKeyword) {
+                parsePrimary();
+            }
             getNextToken();
             ParseExpression();
             break;
@@ -67,6 +70,8 @@ void Parser::mainParser() {
 }
 
 void Parser::getNextToken() {
+    if (m_offset >= m_tokenVector.size())
+        return;
     curToken = m_tokenVector[m_offset++];
     curTokenKind = curToken.getTokenKind();
 }
@@ -388,8 +393,12 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
 std::shared_ptr<ExprAST> Parser::ParseElse() {
     LogP.addnote("->parsing else...");
     getNextToken(); //eat else
-    auto expr = ParseExpression();
-    return std::move(std::make_shared<ElseAST>(expr));
+    vector<shared_ptr<ExprAST>> exprs;
+    while (curTokenKind != TokenKind::CloseBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+    }
+    return std::move(std::make_shared<ElseAST>(exprs));
 }
 
 std::shared_ptr<ExprAST> Parser::ParseParenExpr() { //不可适用于for()
@@ -493,15 +502,24 @@ std::shared_ptr<ExprAST> Parser::ParseIdentifierExpr(TokenKind varType) {
         variableTypeFlag = TokenKind::NullKeyword; //将标识符flag还原
         break;
     }
-    case TokenKind::NullKeyword: //说明非定义变量，该标识符被调用
-        if (!VariableInfo_umap.count(IdName)) { //如果该标识符不存在，则说明调用未定义标识符
+    case TokenKind::NullKeyword: {//说明非定义变量，该标识符被调用
+        TokenKind nextTokenKind = m_tokenVector[m_offset].getTokenKind();
+        //TokenKind n_nextTokenKind = m_tokenVector[m_offset + 1].getTokenKind();
+        if (isClassName(curToken.getTokenStr()) || nextTokenKind == TokenKind::OpenParenthesis || nextTokenKind == TokenKind::Star || nextTokenKind == TokenKind::Dot || nextTokenKind == TokenKind::MemberPointerAccess) { //当前为一个函数
+            auto V = handlObj(); //暂时不用return 
+            //getNextToken(); //eat
+            return V; //不能返回一个空
+        }
+        else if (!VariableInfo_umap.count(IdName) && nextTokenKind != TokenKind::OpenParenthesis) { //如果该标识符不存在，则说明调用未定义标识符
             string tmpStr = "use of undeclared identifier '";
             tmpStr += IdName;
             tmpStr += "'";
             LE.addnote(tmpStr, curToken.TL.m_tokenLine);
             return nullptr;
         }
+        
         break;
+    }
     default: //不符合定义类型的关键字
         LE.addnote("invaild type", curToken.TL.m_tokenLine);
         return nullptr;
@@ -519,8 +537,10 @@ std::shared_ptr<ExprAST> Parser::ParseExpression() {
             getNextToken();
         return nullptr;
     }
-    else if (curTokenKind == TokenKind::EndKeyword || curTokenKind == TokenKind::Semicolon || curTokenKind == TokenKind::CloseParenthesis)
+    else if (curTokenKind == TokenKind::EndKeyword || curTokenKind == TokenKind::Semicolon || curTokenKind == TokenKind::CloseParenthesis || curTokenKind == TokenKind::CloseBrace) {
+        getNextToken();
         return LHS;
+    }
     return ParseBinOpRHS(0, std::move(LHS));
 }
 
@@ -684,7 +704,7 @@ void Parser::handlFunc() {
     }
 }
 
-void Parser::handlObj() {
+std::shared_ptr<FuncAST> Parser::handlObj() {
     if (isFuncName(curToken.getTokenStr())) { //work()
         FuncCallInformation FC;
         FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size()-3);
@@ -697,7 +717,7 @@ void Parser::handlObj() {
         getNextToken(); //eat ;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
-        return;
+        return make_shared<FuncAST>(FC.FuncName);
     }
     Token nextToken = m_tokenVector[m_offset];
     TokenKind nextTokenKind = nextToken.getTokenKind();
@@ -709,7 +729,8 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
+        return make_shared<FuncAST>(nextToken.getTokenStr());
     }
     //case2: A *a = new A();
     else if (nextTokenKind == TokenKind::Star) {
@@ -717,7 +738,8 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
+        return make_shared<FuncAST>(n_nextToken.getTokenStr());
     }
     //case3: a.work();
     else if (nextTokenKind == TokenKind::Dot) {
@@ -732,11 +754,12 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        return make_shared<FuncAST>(FC.FuncName);
     }
     //case4: a->work();
     else if (nextTokenKind == TokenKind::MemberPointerAccess) {
@@ -751,15 +774,17 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "->" << FC.FuncName << "()" << endl;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        return make_shared<FuncAST>(FC.FuncName);
     }
     else {
         ParseExpression();
     }
+    return nullptr;
 }
 
 void Parser::handInitial() {

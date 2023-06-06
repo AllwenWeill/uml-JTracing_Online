@@ -1,8 +1,8 @@
 #include "ExprAST.h"
 class ElseAST : public ExprAST {
-	shared_ptr<ExprAST> m_expr;
+	vector<shared_ptr<ExprAST>> m_exprs;
 public:
-	ElseAST(shared_ptr<ExprAST> expr)
-		:m_expr(expr) {}
+	ElseAST(vector<shared_ptr<ExprAST>> expr)
+		:m_exprs(expr) {}
 	~ElseAST() {}
 };
