@@ -20,14 +20,14 @@ Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<s
 }
 
 Parser::~Parser() {
-    //showParserInformation();
+    showParserInformation();
     //showErrorInformation();
     //showVariableInformation();
 }
 
 void Parser::mainParser() {
     int tmpSize = m_tokenVector.size() - 1;
-    while(m_offset <= tmpSize && m_tokenVector.size() != 0) {
+    while(m_offset <= tmpSize && m_tokenVector.size() != 0) { //warning:此处m_offset是无符号类型，与int类型比较会使tmpSize也统一为无符号类型，因此如果tmpSize<0时会转换成最大数，故需要加一步判断
         //cout << "ready> "<<endl;
         switch (curTokenKind) {
         case TokenKind::ModuleKeyword:
@@ -59,6 +59,10 @@ void Parser::mainParser() {
                 handlFunc();
                 
             }
+            if (curTokenKind == TokenKind::IfKeyword || curTokenKind == TokenKind::WhileKeyword || curTokenKind == TokenKind::ElseKeyword || curTokenKind == TokenKind::ForKeyword) {
+                parsePrimary();
+            }
+            getNextToken();
             ParseExpression();
             break;
         }
@@ -66,6 +70,8 @@ void Parser::mainParser() {
 }
 
 void Parser::getNextToken() {
+    if (m_offset >= m_tokenVector.size())
+        return;
     curToken = m_tokenVector[m_offset++];
     curTokenKind = curToken.getTokenKind();
 }
@@ -81,6 +87,30 @@ std::shared_ptr<ExprAST> Parser::parsePrimary() { //解析初级表达式
     case TokenKind::IntKeyword:
         LogP.addnote("->parsing a IntVariable...");
         variableTypeFlag = TokenKind::IntKeyword;
+        break;
+    case TokenKind::DoubleKeyword:
+        LogP.addnote("->parsing a DoubleVariable...");
+        variableTypeFlag = TokenKind::DoubleKeyword;
+        break;
+    case TokenKind::CharKeyword:
+        LogP.addnote("->parsing a CharVariable...");
+        variableTypeFlag = TokenKind::CharKeyword;
+        break;
+    case TokenKind::StringKeyword:
+        LogP.addnote("->parsing a StringVariable...");
+        variableTypeFlag = TokenKind::StringKeyword;
+        break;
+    case TokenKind::VoidKeyword:
+        LogP.addnote("->parsing a VoidVariable...");
+        variableTypeFlag = TokenKind::VoidKeyword;
+        break;
+    case TokenKind::BoolKeyword:
+        LogP.addnote("->parsing a BoolVariable...");
+        variableTypeFlag = TokenKind::BoolKeyword;
+        break;
+    case TokenKind::FloatKeyword:
+        LogP.addnote("->parsing a FloatVariable...");
+        variableTypeFlag = TokenKind::FloatKeyword;
         break;
     case TokenKind::RegKeyword:
         LogP.addnote("->parsing a RegVariable...");
@@ -363,8 +393,12 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
 std::shared_ptr<ExprAST> Parser::ParseElse() {
     LogP.addnote("->parsing else...");
     getNextToken(); //eat else
-    auto expr = ParseExpression();
-    return std::move(std::make_shared<ElseAST>(expr));
+    vector<shared_ptr<ExprAST>> exprs;
+    while (curTokenKind != TokenKind::CloseBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+    }
+    return std::move(std::make_shared<ElseAST>(exprs));
 }
 
 std::shared_ptr<ExprAST> Parser::ParseParenExpr() { //不可适用于for()
@@ -450,7 +484,13 @@ std::shared_ptr<ExprAST> Parser::ParseIdentifierExpr(TokenKind varType) {
     case TokenKind::ByteKeyword:
     case TokenKind::IntegerKeyword:
     case TokenKind::RegKeyword:
-    case TokenKind::PosEdgeKeyword:{
+    case TokenKind::PosEdgeKeyword:
+    case TokenKind::StringKeyword:
+    case TokenKind::BoolKeyword:
+    case TokenKind::CharKeyword:
+    case TokenKind::VoidKeyword:
+    case TokenKind::FloatKeyword:
+    case TokenKind::DoubleKeyword:{
         if (VariableInfo_umap.count(IdName)) { //如果该标识符已经存在，则说明重复定义
             LE.addnote("previous definition here", curToken.TL.m_tokenLine);
             return nullptr;
@@ -462,15 +502,24 @@ std::shared_ptr<ExprAST> Parser::ParseIdentifierExpr(TokenKind varType) {
         variableTypeFlag = TokenKind::NullKeyword; //将标识符flag还原
         break;
     }
-    case TokenKind::NullKeyword: //说明非定义变量，该标识符被调用
-        if (!VariableInfo_umap.count(IdName)) { //如果该标识符不存在，则说明调用未定义标识符
+    case TokenKind::NullKeyword: {//说明非定义变量，该标识符被调用
+        TokenKind nextTokenKind = m_tokenVector[m_offset].getTokenKind();
+        //TokenKind n_nextTokenKind = m_tokenVector[m_offset + 1].getTokenKind();
+        if (isClassName(curToken.getTokenStr()) || nextTokenKind == TokenKind::OpenParenthesis || nextTokenKind == TokenKind::Star || nextTokenKind == TokenKind::Dot || nextTokenKind == TokenKind::MemberPointerAccess) { //当前为一个函数
+            auto V = handlObj(); //暂时不用return 
+            //getNextToken(); //eat
+            return V; //不能返回一个空
+        }
+        else if (!VariableInfo_umap.count(IdName) && nextTokenKind != TokenKind::OpenParenthesis) { //如果该标识符不存在，则说明调用未定义标识符
             string tmpStr = "use of undeclared identifier '";
             tmpStr += IdName;
             tmpStr += "'";
             LE.addnote(tmpStr, curToken.TL.m_tokenLine);
             return nullptr;
         }
+        
         break;
+    }
     default: //不符合定义类型的关键字
         LE.addnote("invaild type", curToken.TL.m_tokenLine);
         return nullptr;
@@ -488,8 +537,10 @@ std::shared_ptr<ExprAST> Parser::ParseExpression() {
             getNextToken();
         return nullptr;
     }
-    else if (curTokenKind == TokenKind::EndKeyword || curTokenKind == TokenKind::Semicolon || curTokenKind == TokenKind::CloseParenthesis)
+    else if (curTokenKind == TokenKind::EndKeyword || curTokenKind == TokenKind::Semicolon || curTokenKind == TokenKind::CloseParenthesis || curTokenKind == TokenKind::CloseBrace) {
+        getNextToken();
         return LHS;
+    }
     return ParseBinOpRHS(0, std::move(LHS));
 }
 
@@ -637,6 +688,10 @@ void Parser::handlFunc() {
     cout << curToken.getTokenStr() << "()..." << endl;
     getNextToken(); //eat Identifier
     if (curTokenKind != TokenKind::OpenParenthesis) { //如果此时下一个Token是'('，则说明此时是一个函数
+        --m_offset;
+        curToken = m_tokenVector[--m_offset];
+        curTokenKind = curToken.getTokenKind();
+        cout << "-->Not a Funciton...";
         return;
     }
     while (curTokenKind != TokenKind::CloseParenthesis) { //跳过func()括号中参数，对于生成uml时序图意义不大(暂时不考虑参数设计函数调用情况)
@@ -649,7 +704,7 @@ void Parser::handlFunc() {
     }
 }
 
-void Parser::handlObj() {
+std::shared_ptr<FuncAST> Parser::handlObj() {
     if (isFuncName(curToken.getTokenStr())) { //work()
         FuncCallInformation FC;
         FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size()-3);
@@ -662,7 +717,7 @@ void Parser::handlObj() {
         getNextToken(); //eat ;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
-        return;
+        return make_shared<FuncAST>(FC.FuncName);
     }
     Token nextToken = m_tokenVector[m_offset];
     TokenKind nextTokenKind = nextToken.getTokenKind();
@@ -674,7 +729,8 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
+        return make_shared<FuncAST>(nextToken.getTokenStr());
     }
     //case2: A *a = new A();
     else if (nextTokenKind == TokenKind::Star) {
@@ -682,7 +738,8 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
+        return make_shared<FuncAST>(n_nextToken.getTokenStr());
     }
     //case3: a.work();
     else if (nextTokenKind == TokenKind::Dot) {
@@ -697,11 +754,12 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        return make_shared<FuncAST>(FC.FuncName);
     }
     //case4: a->work();
     else if (nextTokenKind == TokenKind::MemberPointerAccess) {
@@ -716,15 +774,17 @@ void Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        //getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "->" << FC.FuncName << "()" << endl;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        return make_shared<FuncAST>(FC.FuncName);
     }
     else {
         ParseExpression();
     }
+    return nullptr;
 }
 
 void Parser::handInitial() {

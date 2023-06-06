@@ -15,3 +15,4 @@
 #include "ForAST.h"
 #include "ObjCallFuncAAST.h"
 #include "ObjCallFuncPAST.h"
+#include "FuncAST.h"

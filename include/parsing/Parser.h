@@ -63,7 +63,7 @@ private:
     void handlAlways_ff();
     void handlAlways_comb();
     void handInitial();
-    void handlObj();
+    std::shared_ptr<FuncAST> handlObj();
     void handInclude();
     void handlFunc();
     void showErrorInformation();
