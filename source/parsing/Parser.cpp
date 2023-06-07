@@ -53,6 +53,18 @@ void Parser::mainParser() {
         case TokenKind::IncludeKeyword:
             handInclude();
             break;
+        case TokenKind::WhileKeyword:
+            ParseWhile();
+            break;
+        case TokenKind::ForKeyword:
+            ParseFor();
+            break;
+        case TokenKind::IffKeyword:
+            ParseIf();
+            break;
+        case TokenKind::ElseKeyword:
+            ParseElse();
+            break;
         default:
             if (Type_uset.count(curTokenKind)) { //如果在Type表中，则说明当前token为int等类型关键字
                 getNextToken(); //eat type
@@ -62,7 +74,13 @@ void Parser::mainParser() {
             if (curTokenKind == TokenKind::IfKeyword || curTokenKind == TokenKind::WhileKeyword || curTokenKind == TokenKind::ElseKeyword || curTokenKind == TokenKind::ForKeyword) {
                 parsePrimary();
             }
-            getNextToken();
+            if (curTokenKind == TokenKind::CloseBrace || curTokenKind == TokenKind::CloseBracket || curTokenKind == TokenKind::CloseParenthesis || curTokenKind == TokenKind::Semicolon) {
+                getNextToken();
+            }
+            if (curTokenKind == TokenKind::EndOfFile) {
+                m_offset = m_tokenVector.size();
+                break;
+            }
             ParseExpression();
             break;
         }
@@ -72,7 +90,7 @@ void Parser::mainParser() {
 void Parser::getNextToken() {
     if (m_offset >= m_tokenVector.size())
         return;
-    curToken = m_tokenVector[m_offset++];
+    curToken = m_tokenVector[++m_offset];
     curTokenKind = curToken.getTokenKind();
 }
 
@@ -169,6 +187,11 @@ std::shared_ptr<ExprAST> Parser::parsePrimary() { //解析初级表达式
     case TokenKind::ForKeyword: {
         LogP.addnote("parsing for:");
         auto V = ParseFor();
+        return std::move(V);
+    }
+    case TokenKind::WhileKeyword: {
+        LogP.addnote("parsing while:");
+        auto V = ParseWhile();
         return std::move(V);
     }
     case TokenKind::Identifier:
@@ -541,6 +564,10 @@ std::shared_ptr<ExprAST> Parser::ParseExpression() {
         getNextToken();
         return LHS;
     }
+    else if (curTokenKind == TokenKind::ReturnKeyword) {
+        handlReturn();
+        return LHS;
+    }
     return ParseBinOpRHS(0, std::move(LHS));
 }
 
@@ -691,7 +718,7 @@ void Parser::handlFunc() {
         --m_offset;
         curToken = m_tokenVector[--m_offset];
         curTokenKind = curToken.getTokenKind();
-        cout << "-->Not a Funciton...";
+        cout << "-->Not a Funciton..." << endl;;
         return;
     }
     while (curTokenKind != TokenKind::CloseParenthesis) { //跳过func()括号中参数，对于生成uml时序图意义不大(暂时不考虑参数设计函数调用情况)
@@ -700,7 +727,10 @@ void Parser::handlFunc() {
     getNextToken(); //eat )
     getNextToken(); //eat {
     while (curTokenKind != TokenKind::CloseBrace) {
-        mainParser();
+        ParseExpression();
+        if (curTokenKind == TokenKind::Semicolon) {
+            getNextToken(); //eat ;
+        }
     }
 }
 
@@ -787,6 +817,32 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
     return nullptr;
 }
 
+std::shared_ptr<WhileAST>  Parser::ParseWhile() {
+    cout << "Parsing while..." << endl;
+    getNextToken(); //eat while
+    if (curTokenKind != TokenKind::OpenParenthesis) { //while格式残缺，expected '('
+        return nullptr;
+    }
+    getNextToken(); //eat '('
+    auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
+    auto cmp = ParseCmpOpRHS(LHS);
+    getNextToken(); //eat ')'
+    if (curTokenKind != TokenKind::OpenBrace) { //while格式残缺，expected '{'
+        return nullptr;
+    }
+    getNextToken(); //eat '{'
+    vector<shared_ptr<ExprAST>> exprs;
+    while (curTokenKind != TokenKind::CloseBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+        if (curTokenKind == TokenKind::Semicolon) {
+            getNextToken(); //eat ';'
+        }
+    }
+    getNextToken(); //eat '}'
+    return make_shared<WhileAST>(cmp, exprs);
+}
+
 void Parser::handInitial() {
     getNextToken();
     if (ParseInitial()) {
@@ -801,6 +857,14 @@ void Parser::handInclude() {
     getNextToken(); //eat include;
     getNextToken(); //eat "";
     getNextToken();
+}
+
+void Parser::handlReturn() {
+    LogP.addnote("parsed return...");
+    while (curTokenKind != TokenKind::Semicolon) {
+        getNextToken();
+    }
+    getNextToken(); //eat ';'
 }
 
 void Parser::showErrorInformation() {
