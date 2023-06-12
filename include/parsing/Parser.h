@@ -12,7 +12,7 @@ struct VariableInformation {
 };
 class Parser {
 public:
-    Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList *pCList);
+    Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList *pCList, string curFileName);
     ~Parser();
     LogError LE;
     LogParser LogP;
@@ -21,6 +21,7 @@ public:
     unordered_map<string, VariableInformation> VariableInfo_umap; //变量存储表
     unordered_set<TokenKind> Type_uset; //变量类型表
 private:
+    string m_curFileName; 
     unordered_map<string, vector<Token>> m_hTokenFlows;
     unordered_map<string, vector<Token>> m_cppTokenFlows;
     ClassList* m_pCList;
@@ -62,7 +63,7 @@ private:
     void handlAlways_ff();
     void handlAlways_comb();
     void handInitial();
-    void handlObj();
+    std::shared_ptr<FuncAST> handlObj();
     void handInclude();
     void handlFunc();
     void showErrorInformation();
@@ -70,4 +71,6 @@ private:
     void showVariableInformation();
     string findClassName(string targetStr); //遍历ObjInstantiation_umap，通过a找其class名A
     vector<Token> filterTokenFlow(string targetFuncName, string targetfFleName);
+    bool isClassName(string name);
+    bool isFuncName(string targetStr);
 };

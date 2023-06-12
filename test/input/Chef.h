@@ -4,9 +4,7 @@ class Chef {
 public:
 	Chef();
 	~Chef();
-	string getChefName() {
-		return m_chefName;
-	}
+	string getChefName();
 	void cooking();
 private:
 	string m_chefName;
