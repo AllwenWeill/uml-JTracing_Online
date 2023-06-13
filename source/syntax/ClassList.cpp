@@ -9,8 +9,21 @@ ClassList::ClassList()
 void ClassList::addFuncCallInfo(FuncCallInformation FC) {
 	FuncCallInformation_umap[getClassCounter()] = FC;
 }
-void ClassList::addLoopInfo() {
+void ClassList::modifyDescendantsSequence(int position, unordered_map<int,int> tmpCurDescendantsSequenceMap){
+    FuncCallInformation_umap.at(position).descendantsSequence = tmpCurDescendantsSequenceMap;
+}
+void ClassList::modifyDirectDescendantsSequence(int position, unordered_map<int,int> tmpCurDescendantsSequenceMap) {
+    FuncCallInformation_umap.at(position).directDescendantsSequence = tmpCurDescendantsSequenceMap;
+}
+void ClassList::DeleteDirectDDescendantsSequenceEnum(int position, int key){
+    FuncCallInformation_umap.at(position).directDescendantsSequence.erase(key);
+}
+void ClassList::setCallClassName(int callPosition, int beCallPosition) {
+    FuncCallInformation_umap.at(callPosition).callClassName =FuncCallInformation_umap.at(beCallPosition).invokeClassName;
+  }
 
+void ClassList::addLoopInfo(vector<string> LP) {
+    Loop_umap[getClassCounter()] = LP;
 }
 void ClassList::addAltInfo() {
 

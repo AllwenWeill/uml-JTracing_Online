@@ -1,8 +1,8 @@
 #include "SourceManager.h"
 namespace fs = std::filesystem;
 SourceManager::SourceManager(fs::path& filepath) :
-    m_filepath(filepath),
-    m_fileInputDirPath("../../../test/input")
+        m_filepath(filepath),
+        m_fileInputDirPath("/tmp/tmp.V41aZ2znkH/test/input")
 {
     scanFileDir();
 }
@@ -11,23 +11,23 @@ SourceManager::SourceManager(const string& codeText)
 {
     readSource(codeText);
 }
-// function: »ñÈ¡inputÎÄ¼ş¼ĞÖĞËùÓĞÎÄ¼şµÄÎÄ¼şÃû
+// function: è·å–inputæ–‡ä»¶å¤¹ä¸­æ‰€æœ‰æ–‡ä»¶çš„æ–‡ä»¶å
 // param: null
 // return: null
 bool SourceManager::scanFileDir() {
-    //ÅĞ¶Ï.svÎÄ¼şÂ·¾¶ÊÇ·ñ´æÔÚ
+    //åˆ¤æ–­.svæ–‡ä»¶è·¯å¾„æ˜¯å¦å­˜åœ¨
     if (!fs::exists(m_fileInputDirPath)) {
         perror("Error: Invaild fileInputDirPath.\n");
-        return false; 
+        return false;
     }
-    // ±éÀú input ÎÄ¼ş¼ĞÖĞµÄÃ¿Ò»¸öÎÄ¼ş
+    // éå† input æ–‡ä»¶å¤¹ä¸­çš„æ¯ä¸€ä¸ªæ–‡ä»¶
     for (const auto& dirEntry : std::filesystem::directory_iterator(m_fileInputDirPath)) {
         if (dirEntry.is_regular_file()) {
             const std::string& fileName = dirEntry.path().filename().string();
             m_filenames.emplace_back(fileName);
         }
     }
-    // debug: ´òÓ¡ÎÄ¼şÃû
+    // debug: æ‰“å°æ–‡ä»¶å
     cout << "<File names> " << endl;
     for (const auto& fileName : m_filenames) {
         std::cout << fileName << std::endl;
@@ -47,36 +47,36 @@ bool SourceManager::scanFileDir() {
 }
 
 void SourceManager::filterFileName(string filename) {
-    //¼ì²âºó×ºÈı¸ö×Ö·ûÊÇ·ñÎª".h"
-    if (filename.substr(filename.size() - 2, filename.size() - 1) == ".h") { //Ìí¼Ó.hÎÄ±¾ÄÚÈİ
-        string str_filepath = "../../../test/input/" + filename;
+    //æ£€æµ‹åç¼€ä¸‰ä¸ªå­—ç¬¦æ˜¯å¦ä¸º".h"
+    if (filename.substr(filename.size() - 2, filename.size() - 1) == ".h") { //æ·»åŠ .hæ–‡æœ¬å†…å®¹
+        string str_filepath = "/tmp/tmp.V41aZ2znkH/test/input/" + filename;
         fs::path filepath(str_filepath);
-        m_hfiles[filename] = readNormalSource(filepath); //¶ÁÈ¡ÎÄ±¾
+        m_hfiles[filename] = readNormalSource(filepath); //è¯»å–æ–‡æœ¬
         /*
-        //¼ì²âÊ××ÖÄ¸ÊÇ·ñÎª´óĞ´
+        //æ£€æµ‹é¦–å­—æ¯æ˜¯å¦ä¸ºå¤§å†™
         if (isupper(filename[0])) {
             string tmpClassName = filename.substr(0, filename.size() - 2);
             m_classnames.emplace_back(tmpClassName);
         }*/
     }
-    else if (filename.substr(filename.size() - 4, filename.size() - 1) == ".cpp") { //Ìí¼Ó.cppÎÄ±¾ÄÚÈİ
-        string str_filepath = "../../../test/input/" + filename;
+    else if (filename.substr(filename.size() - 4, filename.size() - 1) == ".cpp") { //æ·»åŠ .cppæ–‡æœ¬å†…å®¹
+        string str_filepath = "/tmp/tmp.V41aZ2znkH/test/input/" + filename;
         fs::path filepath(str_filepath);
-        m_cppfiles[filename] = readNormalSource(filepath); //¶ÁÈ¡ÎÄ±¾
+        m_cppfiles[filename] = readNormalSource(filepath); //è¯»å–æ–‡æœ¬
     }
     else {
         return;
     }
 }
 
-// function: ¶ÁÈ¡.h»ò.cppÎÄ¼şÎÄ±¾ÄÚÈİ
-// param: ÎÄ¼şÂ·¾¶
-// return: ÎÄ¼şÎÄ±¾
+// function: è¯»å–.hæˆ–.cppæ–‡ä»¶æ–‡æœ¬å†…å®¹
+// param: æ–‡ä»¶è·¯å¾„
+// return: æ–‡ä»¶æ–‡æœ¬
 string SourceManager::readNormalSource(fs::path& filepath) {
-    //ÑéÖ¤ÎÄ¼şÂ·¾¶ÓĞĞ§ĞÔ
+    //éªŒè¯æ–‡ä»¶è·¯å¾„æœ‰æ•ˆæ€§
     if (!fs::exists(filepath)) {
         perror("Error: Invaild filepath.\n");
-        exit(-1); //ĞŞ¸ÄÎªÖØĞÂÊäÈëÂ·¾¶
+        exit(-1); //ä¿®æ”¹ä¸ºé‡æ–°è¾“å…¥è·¯å¾„
     }
     std::ifstream stream(filepath, std::ios::binary);
     std::error_code ec;
@@ -99,20 +99,20 @@ unordered_map<string, string> SourceManager::getcppFiles() {
     return m_cppfiles;
 }
 
-// function: ¶ÁÈ¡Ô´´úÂë.svÎÄ¼ş
-// param: .svÎÄ¼şµÄÂ·¾¶
+// function: è¯»å–æºä»£ç .svæ–‡ä»¶
+// param: .svæ–‡ä»¶çš„è·¯å¾„
 // return: null
 void SourceManager::readsvSource(fs::path& filepath) {
-    //ÅĞ¶Ï.svÎÄ¼şÂ·¾¶ÊÇ·ñ´æÔÚ
+    //åˆ¤æ–­.svæ–‡ä»¶è·¯å¾„æ˜¯å¦å­˜åœ¨
     if (!fs::exists(filepath)) {
         perror("Error: Invaild filepath.\n");
-        exit(-1); //ĞŞ¸ÄÎªÖØĞÂÊäÈëÂ·¾¶
+        exit(-1); //ä¿®æ”¹ä¸ºé‡æ–°è¾“å…¥è·¯å¾„
     }
     fd.filename = filepath.filename().string();
-    //¼ì²âºó×ºÈı¸ö×Ö·ûÊÇ·ñÎª".sv"
+    //æ£€æµ‹åç¼€ä¸‰ä¸ªå­—ç¬¦æ˜¯å¦ä¸º".sv"
     if (fd.filename.substr(fd.filename.size() - 3, fd.filename.size() - 1) != ".sv") {
         perror("Error: Not the .sv file.\n");
-        exit(-1);//ĞŞ¸ÄÎªÖØĞÂÊäÈëÂ·¾¶
+        exit(-1);//ä¿®æ”¹ä¸ºé‡æ–°è¾“å…¥è·¯å¾„
     }
     fd.filedirectory = filepath.string();
     std::ifstream stream(filepath, std::ios::binary);

@@ -4,7 +4,7 @@
 struct FuncCallInformation {
     string invokeClassName;
     string FuncName;
-    string callClassName; //µ÷ÓÃ¸Ã³ÉÔ±º¯ÊýµÄÀà
+    string callClassName; //ï¿½ï¿½ï¿½Ã¸Ã³ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     int selfCall = 0;
     vector<int> loopCall;
     vector<int> childSequence;
@@ -12,6 +12,9 @@ struct FuncCallInformation {
     vector<int> else_start;
     vector<int> alts_end;
     vector<int> else_end;
+    unordered_map<int,int> descendantsSequence;
+    unordered_map<int,int> directDescendantsSequence;
+    int iterationCounter;
 };
 class ClassList {
 private:
@@ -22,8 +25,12 @@ private:
     unordered_map<string, vector<int>> ClassActivation_umap;
     int getClassCounter();
 public:
+    void modifyDescendantsSequence(int ,unordered_map<int,int> );
+    void modifyDirectDescendantsSequence(int  ,unordered_map<int,int> );
+    void DeleteDirectDDescendantsSequenceEnum(int ,int key);
+    void setCallClassName(int,int );
     void addFuncCallInfo(FuncCallInformation FC);
-    void addLoopInfo();
+    void addLoopInfo(vector<string> LP);
     void addAltInfo();
     void addClassActivationInfo();
     unordered_map<int, FuncCallInformation> getFuncCallInfo();

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/include/handlMessage/LogParser.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/include/parsing/Lexer.h" charset="GB18030" />
+    <file url="file://$PROJECT_DIR$/include/parsing/Parser.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/include/preprocessing/SourceManager.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/source/main.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/source/parsing/Lexer.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/source/parsing/Parser.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/source/parsing/Token.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/source/preprocessing/SourceManager.cpp" charset="UTF-8" />
+  </component>
+</project>

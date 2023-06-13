@@ -10,10 +10,10 @@
 using namespace std;
 namespace fs = std::filesystem;
 struct FileData {
-    string filename; //ÎÄ¼şÃû
-    string filememo; //ÎÄ¼şÄÚÈİ
-    string filedirectory; //ÎÄ¼şÄ¿Â¼
-    unsigned long int filesize; //ÎÄ¼ş´óĞ¡
+    string filename; //æ–‡ä»¶å
+    string filememo; //æ–‡ä»¶å†…å®¹
+    string filedirectory; //æ–‡ä»¶ç›®å½•
+    unsigned long int filesize; //æ–‡ä»¶å¤§å°
 };
 class SourceManager {
 public:
@@ -21,20 +21,20 @@ public:
     SourceManager(fs::path& filepath);
     SourceManager(const string& codeText);
     void readsvSource(fs::path& filepath);
-    string readNormalSource(fs::path& filepath); //¶ÁÈ¡.h/.cppÎÄ¼ş
+    string readNormalSource(fs::path& filepath); //è¯»å–.h/.cppæ–‡ä»¶
     void readSource(const string& codeText);
     ~SourceManager() {};
     bool scanFileDir();
     unordered_map<string, string> gethFiles();
     unordered_map<string, string> getcppFiles();
 private:
-    fs::path m_filepath; //ÎÄ¼şÂ·¾¶
-    fs::path m_fileInputDirPath; //ÊäÈëÎÄ¼ş¼ĞÂ·¾¶
-    fs::path m_fileOutputDirPath; //Êä³öÎÄ¼ş¼ĞÂ·¾¶
-    vector<string> m_filenames; //É¨Ãèµ½µÄinputÎÄ¼ş¼ĞÀïµÄÎÄ¼şÃû
-    vector<string> m_classnames; //É¨Ãè.hÎÄ¼şµÃµ½µÄÀàÃû
-    unordered_map<string, string> m_hfiles; //½öº¬.hÍ·ÎÄ¼ş¼°ÆäÎÄ±¾ÄÚÈİ
-    unordered_map<string, string> m_cppfiles; //½öº¬.cppÍ·ÎÄ¼ş¼°ÆäÎÄ±¾ÄÚÈİ
+    fs::path m_filepath; //æ–‡ä»¶è·¯å¾„
+    fs::path m_fileInputDirPath; //è¾“å…¥æ–‡ä»¶å¤¹è·¯å¾„
+    fs::path m_fileOutputDirPath; //è¾“å‡ºæ–‡ä»¶å¤¹è·¯å¾„
+    vector<string> m_filenames; //æ‰«æåˆ°çš„inputæ–‡ä»¶å¤¹é‡Œçš„æ–‡ä»¶å
+    vector<string> m_classnames; //æ‰«æ.hæ–‡ä»¶å¾—åˆ°çš„ç±»å
+    unordered_map<string, string> m_hfiles; //ä»…å«.hå¤´æ–‡ä»¶åŠå…¶æ–‡æœ¬å†…å®¹
+    unordered_map<string, string> m_cppfiles; //ä»…å«.cppå¤´æ–‡ä»¶åŠå…¶æ–‡æœ¬å†…å®¹
 
     void filterFileName(string filename);
 };

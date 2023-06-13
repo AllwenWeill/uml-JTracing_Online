@@ -10,6 +10,7 @@ struct VariableInformation {
     string kind;
     string content = "";
 };
+
 class Parser {
 public:
     Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList *pCList, string curFileName);
@@ -18,20 +19,21 @@ public:
     LogParser LogP;
     Token curToken;
     TokenKind curTokenKind;
-    unordered_map<string, VariableInformation> VariableInfo_umap; //±äÁ¿´æ´¢±í
-    unordered_set<TokenKind> Type_uset; //±äÁ¿ÀàÐÍ±í
+    unordered_map<string, VariableInformation> VariableInfo_umap; //ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢ï¿½ï¿½
+    unordered_set<TokenKind> Type_uset; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í±ï¿½
 private:
     string m_curFileName; 
     unordered_map<string, vector<Token>> m_hTokenFlows;
     unordered_map<string, vector<Token>> m_cppTokenFlows;
     ClassList* m_pCList;
-    VariableInformation VF; //¸ÃVF½á¹¹ÌåÐèÒª²»¶Ï±»¸üÐÂ£¬Éú´æÖÜÆÚÖ±µ½ParserÏú»Ù
+    vector<int>testvec;
+    VariableInformation VF; //ï¿½ï¿½VFï¿½á¹¹ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Ï±ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½Parserï¿½ï¿½ï¿½ï¿½
     unsigned long int m_offset;
     vector<string> m_classNames;
     TokenKind variableTypeFlag;
     unordered_map<string, int> BinopPrecedence_umap;
     vector<Token> m_tokenVector;
-    unordered_map<string, vector<string>> ObjInstantiation_umap; //ÀàÊµÀý»¯¶ÔÓ¦±í£ºA-a1,a2; B-b1,b2;
+    unordered_map<string, vector<string>> ObjInstantiation_umap; //ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½A-a1,a2; B-b1,b2;
     std::shared_ptr<ExprAST> parsePrimary();
     std::shared_ptr<DefinitionAST> parseModule();
     std::shared_ptr<PrototypeAST> ParseModulePrototype();
@@ -43,6 +45,7 @@ private:
     std::shared_ptr<ExprAST> ParseBinOpRHS(int ExprPrec, std::shared_ptr<ExprAST> LHS);
     std::shared_ptr<ExprAST> ParseCmpOpRHS(std::shared_ptr<ExprAST> LHS);
     std::shared_ptr<ExprAST> ParseBegin();
+    std::shared_ptr<ExprAST> HandleAlt();
     std::shared_ptr<ExprAST> ParseIf();
     std::shared_ptr<ExprAST> ParseElse();
     std::shared_ptr<ExprAST> ParseBitWide();
@@ -69,7 +72,7 @@ private:
     void showErrorInformation();
     void showParserInformation();
     void showVariableInformation();
-    string findClassName(string targetStr); //±éÀúObjInstantiation_umap£¬Í¨¹ýaÕÒÆäclassÃûA
+    string findClassName(string targetStr); //ï¿½ï¿½ï¿½ï¿½ObjInstantiation_umapï¿½ï¿½Í¨ï¿½ï¿½aï¿½ï¿½ï¿½ï¿½classï¿½ï¿½A
     vector<Token> filterTokenFlow(string targetFuncName, string targetfFleName);
     bool isClassName(string name);
     bool isFuncName(string targetStr);

@@ -4,18 +4,20 @@
 #include "allinclude.h"
 #include "TokenKind.h"
 struct TokenLocation{
-    int m_tokenLine; //TokenËùÔÚÐÐºÅ
-    int m_tokenNum; //TokenËù´æ´¢µÄÎ»ÖÃ´ÎÐò
+    int m_tokenLine; //Tokenï¿½ï¿½ï¿½ï¿½ï¿½Ðºï¿½
+    int m_tokenNum; //Tokenï¿½ï¿½ï¿½æ´¢ï¿½ï¿½Î»ï¿½Ã´ï¿½ï¿½ï¿½
 };
+
 class Token{
 public:
     TokenLocation TL;
     Token(){};
     Token(TokenKind kind,int tokenNum, int tokenLine, string tokenString);
     ~Token();
-    string getTokenKindStr(); //·µ»ØTokenKindµÄ×Ö·û´®£¬±ãÓÚµ÷ÊÔ
-    string getTokenStr(); //·µ»Ø¸ÃTokenµÄÊµ¼Ê×Ö·û´®
-    TokenKind getTokenKind(); //·µ»ØTokenKind
+    string getTokenKindStr(); //ï¿½ï¿½ï¿½ï¿½TokenKindï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½
+    string getTokenStr(); //ï¿½ï¿½ï¿½Ø¸ï¿½Tokenï¿½ï¿½Êµï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
+    TokenKind getTokenKind(); //ï¿½ï¿½ï¿½ï¿½TokenKind
+
 private:
     string tokenString;
     TokenKind m_kind;
