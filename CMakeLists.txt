@@ -15,5 +15,5 @@ add_executable (uml-JTracing_Online "source/main.cpp" "uml-JTracing_Online.h"  "
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET uml-JTracing_Online PROPERTY CXX_STANDARD 20)
 endif()
-
+target_link_libraries(${PROJECT_NAME} stdc++fs)
 # TODO: 如有需要，请添加测试并安装目标。
