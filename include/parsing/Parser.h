@@ -43,6 +43,7 @@ private:
     std::shared_ptr<ExprAST> ParseBinOpRHS(int ExprPrec, std::shared_ptr<ExprAST> LHS);
     std::shared_ptr<ExprAST> ParseCmpOpRHS(std::shared_ptr<ExprAST> LHS);
     std::shared_ptr<ExprAST> ParseBegin();
+    std::shared_ptr<ExprAST> HandleAlt();
     std::shared_ptr<ExprAST> ParseIf();
     std::shared_ptr<ExprAST> ParseElse();
     std::shared_ptr<ExprAST> ParseBitWide();
@@ -52,7 +53,9 @@ private:
     std::shared_ptr<ForAST> ParseFor();
     std::shared_ptr<ObjCallFuncPAST> ParseObjCallFuncP();
     std::shared_ptr<ObjCallFuncAAST> ParseObjCallFuncA();
+    std::shared_ptr<WhileAST> ParseWhile();
     void mainParser();
+    void handlReturn();
     void getNextToken();
     int getClassCounter();
     void buildBinopPrecedence();

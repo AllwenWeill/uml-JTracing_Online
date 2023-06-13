@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <unordered_set>
+#include <set>
 
 #ifdef __linux__
 #include <error.h>
