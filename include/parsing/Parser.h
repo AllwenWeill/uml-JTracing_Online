@@ -43,6 +43,7 @@ private:
     std::shared_ptr<ExprAST> ParseBinOpRHS(int ExprPrec, std::shared_ptr<ExprAST> LHS);
     std::shared_ptr<ExprAST> ParseCmpOpRHS(std::shared_ptr<ExprAST> LHS);
     std::shared_ptr<ExprAST> ParseBegin();
+    std::shared_ptr<ExprAST> HandleAlt();
     std::shared_ptr<ExprAST> ParseIf();
     std::shared_ptr<ExprAST> ParseElse();
     std::shared_ptr<ExprAST> ParseBitWide();

@@ -372,6 +372,10 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
     return std::make_shared<ForAST>(expr, init, cmp, step);
 }
 
+/*std::shared_ptr<ExprAST> Parser::HandleAlt() {
+    return 
+}*/
+
 std::shared_ptr<InitialAST> Parser::ParseInitial() {
     getNextToken(); //eat Initial关键字
     shared_ptr<ExprAST> expr = nullptr;
@@ -779,6 +783,8 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat Dot;
         FC.FuncName = curToken.getTokenStr();
+        string a = "main";
+        FC.callClassName = a;
         //FuncCallInformation_umap[getClassCounter()] = FC;
         m_pCList->addFuncCallInfo(FC);
         while (curTokenKind != TokenKind::Semicolon) {
@@ -787,8 +793,38 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
+        int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
+        //统计递归次数
+        unordered_map<int, int> tmpCurDescendantsSequenceMap;
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            tmpCurDescendantsSequenceMap[i] = i;
+        }
+        //从子孙节点中提纯子节点
+        m_pCList->modifyDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
+        m_pCList->modifyDirectDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
+            for (auto j = tmpDescendantsSequenceMap.begin(); j != tmpDescendantsSequenceMap.end(); ++j) {
+                m_pCList->DeleteDirectDDescendantsSequenceEnum(curFuncCallOrder, j->first);
+            }
+        }
+        auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
+        //将子节点的callClassName设置为当前类名
+        for (auto i = tmpDescendantsSequenceMapFetch.begin(); i != tmpDescendantsSequenceMapFetch.end(); ++i) {
+            m_pCList->setCallClassName(i->first, curFuncCallOrder);
+        }
+        if (!((m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName.size())) {
+            (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName = "Main";
+        }
+        //测试得到的内容
+        cout << (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName << endl;
+        cout << (m_pCList->getFuncCallInfo()).at(2).callClassName << "++++++---" << endl;
+
+        // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
+        // Parser (m_hTokenFlows, m_cppTokenFlows, targetTokenFlows2, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         return make_shared<FuncAST>(FC.FuncName);
     }
     //case4: a->work();
@@ -800,6 +836,8 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         getNextToken(); //eat '->'
         FC.FuncName = curToken.getTokenStr();
         //FuncCallInformation_umap[getClassCounter()] = FC;
+        if ((m_pCList->getFuncCallInfo().size()) == 0)
+            FC.callClassName = "Main";
         m_pCList->addFuncCallInfo(FC);
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
@@ -807,8 +845,32 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "->" << FC.FuncName << "()" << endl;
+        int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
+        //统计递归次数
+        unordered_map<int, int> tmpCurDescendantsSequenceMap;
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            tmpCurDescendantsSequenceMap[i] = i;
+        }
+        //从子孙节点中提纯子节点
+        m_pCList->modifyDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
+        m_pCList->modifyDirectDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
+            for (auto j = tmpDescendantsSequenceMap.begin(); j != tmpDescendantsSequenceMap.end(); ++j) {
+                m_pCList->DeleteDirectDDescendantsSequenceEnum(curFuncCallOrder, j->first);
+            }
+        }
+        auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
+        //将子节点的callClassName设置为当前类名
+        for (auto i = tmpDescendantsSequenceMapFetch.begin(); i != tmpDescendantsSequenceMapFetch.end(); ++i) {
+            m_pCList->setCallClassName(i->first, curFuncCallOrder);
+        }
+        if (!((m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName.size())) {
+            (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName = "Main";
+        }
         return make_shared<FuncAST>(FC.FuncName);
     }
     else {
