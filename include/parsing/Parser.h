@@ -55,7 +55,9 @@ private:
     std::shared_ptr<ForAST> ParseFor();
     std::shared_ptr<ObjCallFuncPAST> ParseObjCallFuncP();
     std::shared_ptr<ObjCallFuncAAST> ParseObjCallFuncA();
+    std::shared_ptr<WhileAST> ParseWhile();
     void mainParser();
+    void handlReturn();
     void getNextToken();
     int getClassCounter();
     void buildBinopPrecedence();

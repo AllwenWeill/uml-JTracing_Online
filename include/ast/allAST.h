@@ -17,3 +17,4 @@
 #include "ObjCallFuncPAST.h"
 #include "ExprAST.h"
 #include "FuncAST.h"
+#include "WhileAST.h"
