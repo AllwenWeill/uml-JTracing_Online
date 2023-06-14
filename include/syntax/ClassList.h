@@ -18,7 +18,9 @@ struct FuncCallInformation {
 };
 class ClassList {
 private:
+    std::ofstream umlFile;
     int m_classCounter;
+    fs::path m_builtUMLPath;
     unordered_map<int, FuncCallInformation> FuncCallInformation_umap;
     unordered_map<int, vector<string>> Loop_umap;
     unordered_map<int, vector<string>> Alt_umap;
@@ -33,10 +35,18 @@ public:
     void addLoopInfo(vector<string> LP);
     void addAltInfo();
     void addClassActivationInfo();
+
+    template<typename T>
+    void outputVector(vector<T> vec);
+
+    template<typename T>
+    void outputUmap(unordered_map<T, T> umap);
+
     unordered_map<int, FuncCallInformation> getFuncCallInfo();
     unordered_map<int, vector<string>> getLoopInfo();
     unordered_map<int, vector<string>> getAltInfo();
     unordered_map<string, vector<int>> getClassActivationInfo();
+    bool writeUMLfile();
 	ClassList();
 	~ClassList();
 };

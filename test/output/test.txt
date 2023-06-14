@@ -1,0 +1,7 @@
+functionorder	invokeClassName		Funcname	callClassName	Selfcall	loopcall	childSequence	alts_start	else_start	 alts_end	else_end
+1		Algorithm	Bubblesort(int{} args)	MainClass	0	   1		1	       0	      0	       0             0
+2		Sortutility                bubblesort(int{} args)	Algorithm	0	   0                           0                     0             0               0             0			
+3		Console	                WriteLint(string msg)	MainClass	0	   0                           0                     0             0               0             0			
+4		Algorithm	Quicksort(int[] args)	MainClass	0	   0                           0                     1	      0               0             0 
+5		Sortutility	                Quicksort(int[] args)	Algorithm	0	   0                           0                     0             0               0             0 			
+6		Console	                WriteLint(string msg)	MainClass	0	   0                           0                     0             0               1             0    
