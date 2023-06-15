@@ -91,7 +91,8 @@ bool ClassList::writeUMLfile_LoopTable() {
 	umlFile << "looporder    loopclassname   		      timeline" << endl;
 	int count = 0;
 	for (auto lc : Loop_umap) {
-		umlFile << ++count << endl; // undo
+		umlFile << ++count; // undo,可以利用输出vector和umap的模板，来简化此处遍历整个容器去输出的代码，更加规范，利用：outputVector和outputUmap两个函数
+		
 	}
 	umlFile.close();
 	if (!fs::exists(m_LoopTablePath))
