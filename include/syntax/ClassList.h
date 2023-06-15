@@ -20,7 +20,10 @@ class ClassList {
 private:
     std::ofstream umlFile;
     int m_classCounter;
-    fs::path m_builtUMLPath;
+    fs::path m_FuncTablePath;
+    fs::path m_LoopTablePath;
+    fs::path m_AltTablePath;
+    fs::path m_ActivationTablePath;
     unordered_map<int, FuncCallInformation> FuncCallInformation_umap;
     unordered_map<int, vector<string>> Loop_umap;
     unordered_map<int, vector<string>> Alt_umap;
@@ -46,7 +49,10 @@ public:
     unordered_map<int, vector<string>> getLoopInfo();
     unordered_map<int, vector<string>> getAltInfo();
     unordered_map<string, vector<int>> getClassActivationInfo();
-    bool writeUMLfile();
+    bool writeUMLfile_FuncTable();
+    bool writeUMLfile_LoopTable();
+    bool writeUMLfile_AltTable();
+    bool writeUMLfile_ActivationTable();
 	ClassList();
 	~ClassList();
 };

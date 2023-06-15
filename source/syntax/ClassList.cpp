@@ -71,37 +71,77 @@ void ClassList::outputUmap(unordered_map<T, T> umap) {
 	}
 }
 
-bool ClassList::writeUMLfile() {
-	umlFile.open(m_builtUMLPath, 0x02);
-	umlFile << "functionorder	invokeClassName		Funcname	callClassName	Selfcall	loopcall	childSequence	alts_start	else_start	 alts_end	else_end" << endl;
+bool ClassList::writeUMLfile_FuncTable() {
+	m_FuncTablePath = "../../../test/output/FuncTable.txt";
+	umlFile.open(m_FuncTablePath, 0x02);
+	umlFile << "functionorder	invokeClassName		Funcname	callClassName	Selfcall" << endl;
 	int count = 0;
 	for(auto fc : FuncCallInformation_umap){
-		umlFile << ++count << "      " << fc.second.invokeClassName << "     " << fc.second.FuncName << "      " << fc.second.callClassName << "        " << fc.second.selfCall << "        " ;
-		outputVector(fc.second.loopCall);
-		umlFile << "      ";
-		outputVector(fc.second.childSequence);
-		umlFile << "      ";
-		outputVector(fc.second.alts_start);
-		umlFile << "      ";
-		outputVector(fc.second.else_start);
-		umlFile << "      ";
-		outputVector(fc.second.alts_end);
-		umlFile << "      ";
-		outputVector(fc.second.else_end);
-		umlFile << "      ";
-
+		umlFile << ++count << "      " << fc.second.invokeClassName << "     " << fc.second.FuncName << "      " << fc.second.callClassName << "        " << fc.second.selfCall << endl;
 	}
-	if (!fs::exists(m_builtUMLPath))
+	umlFile.close();
+	if (!fs::exists(m_FuncTablePath))
+		return false;
+	return true;
+}
+
+bool ClassList::writeUMLfile_LoopTable() {
+	m_LoopTablePath = "../../../test/output/LoopTable.txt";
+	umlFile.open(m_LoopTablePath, 0x02);
+	umlFile << "looporder    loopclassname   		      timeline" << endl;
+	int count = 0;
+	for (auto lc : Loop_umap) {
+		umlFile << ++count << endl; // undo
+	}
+	umlFile.close();
+	if (!fs::exists(m_LoopTablePath))
+		return false;
+	return true;
+}
+
+bool ClassList::writeUMLfile_AltTable() {
+	m_AltTablePath = "../../../test/output/AltTable.txt";
+	umlFile.open(m_AltTablePath, 0x02);
+	umlFile << "altorder    altclassname            timeline        elsetimeline" << endl;
+	int count = 0;
+	for (auto au : Alt_umap) {
+		umlFile << ++count << endl; // undo
+	}
+	umlFile.close();
+	if (!fs::exists(m_AltTablePath))
+		return false;
+	return true;
+}
+
+bool ClassList::writeUMLfile_ActivationTable() {
+	m_ActivationTablePath = "../../../test/output/ActivationTable.txt";
+	umlFile.open(m_ActivationTablePath, 0x02);
+	umlFile << "classname  activiationtime" << endl;
+	int count = 0;
+									// undo
+	umlFile.close();
+	if (!fs::exists(m_ActivationTablePath))
 		return false;
 	return true;
 }
 
 ClassList::~ClassList() {
 	cout << "Complete the build ClassList!" << endl;
-	m_builtUMLPath = "../../../test/output/builtUML.txt";
-	if (writeUMLfile())
-		std::cout << "build <builtUML.txt> success!" << std::endl;
+	
+	if (writeUMLfile_FuncTable())
+		std::cout << "build <FuncTable.txt> success!" << std::endl;
 	else
-		std::cout << "build <builtUML.txt> failed!" << std::endl;
-
+		std::cout << "build <FuncTable.txt> failed!" << std::endl;
+	if (writeUMLfile_LoopTable())
+		std::cout << "build <LoopTable.txt> success!" << std::endl;
+	else
+		std::cout << "build <LoopTable.txt> failed!" << std::endl;
+	if (writeUMLfile_AltTable())
+		std::cout << "build <AltTable.txt> success!" << std::endl;
+	else
+		std::cout << "build <AltTable.txt> failed!" << std::endl;
+	if (writeUMLfile_ActivationTable())
+		std::cout << "build <ActivationTable.txt> success!" << std::endl;
+	else
+		std::cout << "build <ActivationTable.txt> failed!" << std::endl;
 }
