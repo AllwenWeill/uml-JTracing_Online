@@ -1,7 +1,3 @@
-//
-// Created by zj on 2023/5/24.
-//
-
 #ifndef UML_JTRACING_ONLINE_TEST_H
 #define UML_JTRACING_ONLINE_TEST_H
 #include "Chef.h"
@@ -13,7 +9,7 @@ public:
     int m_num;
     Actor2();
     ~Actor2() {};
-    void buyFood();
+    void buyFood(int);
 private:
     int getActorNum2();
 

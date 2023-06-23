@@ -1,4 +1,4 @@
-#include "Parser.h"
+ï»¿#include "Parser.h"
 Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName)
     :m_hTokenFlows(hTokenFlows),
     m_cppTokenFlows(cppTokenFlows),
@@ -27,7 +27,7 @@ Parser::~Parser() {
 
 void Parser::mainParser() {
     int tmpSize = m_tokenVector.size() - 1;
-    while(m_offset <= tmpSize && m_tokenVector.size() != 0) { //warning:´Ë´¦m_offsetÊÇÎŞ·ûºÅÀàĞÍ£¬ÓëintÀàĞÍ±È½Ï»áÊ¹tmpSizeÒ²Í³Ò»ÎªÎŞ·ûºÅÀàĞÍ£¬Òò´ËÈç¹ûtmpSize<0Ê±»á×ª»»³É×î´óÊı£¬¹ÊĞèÒª¼ÓÒ»²½ÅĞ¶Ï
+    while(m_offset <= tmpSize && m_tokenVector.size() != 0) { //warning:æ­¤å¤„m_offsetæ˜¯æ— ç¬¦å·ç±»å‹ï¼Œä¸intç±»å‹æ¯”è¾ƒä¼šä½¿tmpSizeä¹Ÿç»Ÿä¸€ä¸ºæ— ç¬¦å·ç±»å‹ï¼Œå› æ­¤å¦‚æœtmpSize<0æ—¶ä¼šè½¬æ¢æˆæœ€å¤§æ•°ï¼Œæ•…éœ€è¦åŠ ä¸€æ­¥åˆ¤æ–­
         //cout << "ready> "<<endl;
         switch (curTokenKind) {
         case TokenKind::ModuleKeyword:
@@ -59,27 +59,32 @@ void Parser::mainParser() {
         case TokenKind::ForKeyword:
             ParseFor();
             break;
-        case TokenKind::IffKeyword:
+        case TokenKind::IfKeyword:
             ParseIf();
             break;
         case TokenKind::ElseKeyword:
             ParseElse();
             break;
         default:
-            if (Type_uset.count(curTokenKind)) { //Èç¹ûÔÚType±íÖĞ£¬ÔòËµÃ÷µ±Ç°tokenÎªintµÈÀàĞÍ¹Ø¼ü×Ö
+            if (Type_uset.count(curTokenKind)) { //å¦‚æœåœ¨Typeè¡¨ä¸­ï¼Œåˆ™è¯´æ˜å½“å‰tokenä¸ºintç­‰ç±»å‹å…³é”®å­—
                 getNextToken(); //eat type
                 handlFunc();
                 
+            }
+            if (curTokenKind == TokenKind::EndOfFile) {
+                m_offset = m_tokenVector.size();
+                break;
+            }
+            if (m_offset >= tmpSize) {
+                int i = m_offset;
+                ParseExpression();
+                break;
             }
             if (curTokenKind == TokenKind::IfKeyword || curTokenKind == TokenKind::WhileKeyword || curTokenKind == TokenKind::ElseKeyword || curTokenKind == TokenKind::ForKeyword) {
                 parsePrimary();
             }
             if (curTokenKind == TokenKind::CloseBrace || curTokenKind == TokenKind::CloseBracket || curTokenKind == TokenKind::CloseParenthesis || curTokenKind == TokenKind::Semicolon) {
                 getNextToken();
-            }
-            if (curTokenKind == TokenKind::EndOfFile) {
-                m_offset = m_tokenVector.size();
-                break;
             }
             ParseExpression();
             break;
@@ -94,7 +99,7 @@ void Parser::getNextToken() {
     curTokenKind = curToken.getTokenKind();
 }
 
-std::shared_ptr<ExprAST> Parser::parsePrimary() { //½âÎö³õ¼¶±í´ïÊ½
+std::shared_ptr<ExprAST> Parser::parsePrimary() { //è§£æåˆçº§è¡¨è¾¾å¼
     switch (curTokenKind) {
     case TokenKind::Unknown: {
         string tmpStr = "Unknown the ";
@@ -194,6 +199,11 @@ std::shared_ptr<ExprAST> Parser::parsePrimary() { //½âÎö³õ¼¶±í´ïÊ½
         auto V = ParseWhile();
         return std::move(V);
     }
+    case TokenKind::ReturnKeyword: {
+        LogP.addnote("parsing return:");
+        handlReturn();
+        return nullptr;
+    }
     case TokenKind::Identifier:
         return ParseIdentifierExpr(TokenKind::NullKeyword);
     case TokenKind::DoublePlus:
@@ -240,22 +250,22 @@ std::shared_ptr<ObjCallFuncAAST> Parser::ParseObjCallFuncA() {
 */
 std::shared_ptr<ExprAST> Parser::ParseBitWide() {
     getNextToken();
-    if (curTokenKind != TokenKind::IntegerLiteral) { //[]ÄÚµÚÒ»¸öTokenÆÚ´ıµÄÊÇÊı×ÖÀàĞÍµÄ³£Êı
+    if (curTokenKind != TokenKind::IntegerLiteral) { //[]å†…ç¬¬ä¸€ä¸ªTokenæœŸå¾…çš„æ˜¯æ•°å­—ç±»å‹çš„å¸¸æ•°
         LE.addnote("reference to non-constant variable is not allowed in a constant expression", curToken.TL.m_tokenLine);
         return nullptr;
     }
     auto numWide = ParseNumber(); 
-    if (curTokenKind != TokenKind::Colon) { //´ËÊ±ÆÚ´ıÒ»¸ö:
+    if (curTokenKind != TokenKind::Colon) { //æ­¤æ—¶æœŸå¾…ä¸€ä¸ª:
         LE.addnote("packed dimensions require a full range specification", curToken.TL.m_tokenLine);
         return nullptr;
     }
     getNextToken();
-    if (curTokenKind != TokenKind::IntegerLiteral) { //[]ÄÚ×îºóÒ»¸öTokenÆÚ´ıµÄÊÇÊı×ÖÀàĞÍµÄ³£Êı
+    if (curTokenKind != TokenKind::IntegerLiteral) { //[]å†…æœ€åä¸€ä¸ªTokenæœŸå¾…çš„æ˜¯æ•°å­—ç±»å‹çš„å¸¸æ•°
         LE.addnote("reference to non-constant variable is not allowed in a constant expression", curToken.TL.m_tokenLine);
         return nullptr;
     }
     auto numRange = ParseNumber();
-    if (curTokenKind != TokenKind::CloseBracket) { //´ËÊ±ÆÚ´ıÒ»¸ö]
+    if (curTokenKind != TokenKind::CloseBracket) { //æ­¤æ—¶æœŸå¾…ä¸€ä¸ª]
         LE.addnote("expected ']'", curToken.TL.m_tokenLine);
         return nullptr;
     }
@@ -273,9 +283,9 @@ std::shared_ptr<ExprAST> Parser::ParseNumber() {
     return std::move(Result);
 }
 
-// std::shared_ptr<PrototypeAST> Parser::ParseModulePrototype(){ //½âÎömoduleÉùÃ÷£¨¿ÉÄÜ²»ĞèÒª£¿£©
+// std::shared_ptr<PrototypeAST> Parser::ParseModulePrototype(){ //è§£æmoduleå£°æ˜ï¼ˆå¯èƒ½ä¸éœ€è¦ï¼Ÿï¼‰
 //     getNextToken();
-//     if(curTokenKind != TokenKind::Identifier){ //moduleĞèÒªÓĞmoduleÃû
+//     if(curTokenKind != TokenKind::Identifier){ //moduleéœ€è¦æœ‰moduleå
 //         LE.addnote("expected function name in module", curToken.TL.m_tokenLine);
 //         return nullptr;
 //     }
@@ -288,9 +298,9 @@ std::shared_ptr<ExprAST> Parser::ParseNumber() {
 //     return std::make_shared<PrototypeAST>(moduleName);
 // }
 
-std::shared_ptr<DefinitionAST> Parser::ParseModuleDefinition() { //½âÎömoduleÊµÏÖ
+std::shared_ptr<DefinitionAST> Parser::ParseModuleDefinition() { //è§£æmoduleå®ç°
     getNextToken();
-    if (curTokenKind != TokenKind::Identifier) { //moduleĞèÒªÓĞmoduleÃû
+    if (curTokenKind != TokenKind::Identifier) { //moduleéœ€è¦æœ‰moduleå
         LE.addnote("expected function name in module", curToken.TL.m_tokenLine);
         return nullptr;
     }
@@ -319,7 +329,7 @@ std::shared_ptr<DefinitionAST> Parser::ParseModuleDefinition() { //½âÎömoduleÊµÏ
 }
 
 std::shared_ptr<Always_ffAST> Parser::ParseAlways_ff() {
-    getNextToken(); //eat Always_ff¹Ø¼ü×Ö
+    getNextToken(); //eat Always_ffå…³é”®å­—
     if (curTokenKind != TokenKind::At) {
         LE.addnote("always_ff procedure must have one and only one event control", curToken.TL.m_tokenLine);
         return nullptr;
@@ -339,14 +349,14 @@ std::shared_ptr<Always_ffAST> Parser::ParseAlways_ff() {
 }
 
 std::shared_ptr<Always_combAST> Parser::ParseAlways_comb() {
-    getNextToken(); //eat Always_comb¹Ø¼ü×Ö
+    getNextToken(); //eat Always_combå…³é”®å­—
     auto exprs = parsePrimary();
     return std::make_shared<Always_combAST>(exprs);
 }
 
 std::shared_ptr<ForAST> Parser::ParseFor() {
-    getNextToken(); //eat for¹Ø¼ü×Ö
-    if (curTokenKind != TokenKind::OpenParenthesis) { //´ËÊ±ÆÚ´ıÒ»¸ö(
+    getNextToken(); //eat forå…³é”®å­—
+    if (curTokenKind != TokenKind::OpenParenthesis) { //æ­¤æ—¶æœŸå¾…ä¸€ä¸ª(
         LE.addnote("expected '('", curToken.TL.m_tokenLine);
         return nullptr;
     }
@@ -369,6 +379,28 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
     }
     getNextToken(); //eat )
     auto expr = ParseExpression();
+    if (curTokenKind != TokenKind::OpenBrace) { 
+        return nullptr;
+    }
+    getNextToken(); //eat '{'
+    vector<shared_ptr<ExprAST>> exprs;
+    LoopInformation LP;
+    int start = m_pCList->getFuncCallInfo().size();
+    while (curTokenKind != TokenKind::CloseBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+        if (curTokenKind == TokenKind::Semicolon) {
+            getNextToken(); //eat ';'
+        }
+    }
+    int end = m_pCList->getFuncCallInfo().size();
+    for (int i = start; i < end; i++) {
+        LP.timeLine.push_back(i);
+        LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).callClassName);
+        LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).invokeClassName);
+    }
+    m_pCList->addLoopInfo(LP);
+    getNextToken(); //eat '}'
     return std::make_shared<ForAST>(expr, init, cmp, step);
 }
 
@@ -377,12 +409,12 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
 }*/
 
 std::shared_ptr<InitialAST> Parser::ParseInitial() {
-    getNextToken(); //eat Initial¹Ø¼ü×Ö
+    getNextToken(); //eat Initialå…³é”®å­—
     shared_ptr<ExprAST> expr = nullptr;
-    if (curTokenKind != TokenKind::BeginKeyword) { //ÔòËµÃ÷½öÓĞµ¥ĞĞ±í´ïÊ½
+    if (curTokenKind != TokenKind::BeginKeyword) { //åˆ™è¯´æ˜ä»…æœ‰å•è¡Œè¡¨è¾¾å¼
         expr = parsePrimary();
     }
-    else { //ÔòËµÃ÷ÓĞ¶àĞĞ±í´ïÊ½
+    else { //åˆ™è¯´æ˜æœ‰å¤šè¡Œè¡¨è¾¾å¼
         expr = ParseBegin();
     }
     return make_shared<InitialAST>(expr);
@@ -413,27 +445,60 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
         return nullptr;
     }
     auto cond = ParseParenExpr();
-    auto expr = ParseExpression();
-    return std::move(std::make_shared<IfAST>(cond, expr));
+    vector<shared_ptr<ExprAST>> exprs;
+    if (curTokenKind != TokenKind::OpenBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+    }
+    AltInformation AT;
+    int start = m_pCList->getFuncCallInfo().size();
+    while (curTokenKind != TokenKind::CloseBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+        if (curTokenKind == TokenKind::Semicolon) {
+            getNextToken(); //eat ';'
+        }
+    }
+    int end = m_pCList->getFuncCallInfo().size();
+    for (int i = start; i < end; i++) {
+        AT.timeLine.push_back(i + 1);
+        AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i + 1).callClassName);
+        AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i + 1).invokeClassName);
+    }
+    m_pCList->addAltInfo(AT);
+    getNextToken(); //eat '}'
+    return std::move(std::make_shared<IfAST>(cond, exprs));
 }
 
 std::shared_ptr<ExprAST> Parser::ParseElse() {
     LogP.addnote("->parsing else...");
     getNextToken(); //eat else
     vector<shared_ptr<ExprAST>> exprs;
+    AltInformation AT;
+    int start = m_pCList->getFuncCallInfo().size();
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
     }
+    int end = m_pCList->getFuncCallInfo().size();
+    for (int i = start; i < end; i++) {
+        string a;
+        a = m_pCList->getFuncCallInfo().at(i).invokeClassName;
+        AT.timeLine.push_back(i + 1);
+        AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i + 1).callClassName);
+        AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i + 1).invokeClassName);
+    }
+    int elseStartPosition = start + 1;
+    m_pCList->modifyAltInfo(AT, elseStartPosition);
     return std::move(std::make_shared<ElseAST>(exprs));
 }
 
-std::shared_ptr<ExprAST> Parser::ParseParenExpr() { //²»¿ÉÊÊÓÃÓÚfor()
+std::shared_ptr<ExprAST> Parser::ParseParenExpr() { //ä¸å¯é€‚ç”¨äºfor()
     getNextToken(); // eat (.
     shared_ptr<ExprAST> V = nullptr;
     switch (curTokenKind) {
     case TokenKind::Identifier: {
-        if (!VariableInfo_umap.count(curToken.getTokenStr())) { //Èç¹û¸Ã±êÊ¶·û²»´æÔÚ£¬ÔòËµÃ÷µ÷ÓÃÎ´¶¨Òå±êÊ¶·û
+        if (!VariableInfo_umap.count(curToken.getTokenStr())) { //å¦‚æœè¯¥æ ‡è¯†ç¬¦ä¸å­˜åœ¨ï¼Œåˆ™è¯´æ˜è°ƒç”¨æœªå®šä¹‰æ ‡è¯†ç¬¦
             string tmpStr = "use of undeclared identifier '";
             tmpStr += curToken.getTokenStr();
             tmpStr += "'";
@@ -441,7 +506,7 @@ std::shared_ptr<ExprAST> Parser::ParseParenExpr() { //²»¿ÉÊÊÓÃÓÚfor()
             return nullptr;
         }
         auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
-        if (curTokenKind != TokenKind::CloseParenthesis) { //Èç¹û²»Îª)ÔòËµÃ÷ºóÃæÈÔĞèÅĞ¶Ï
+        if (curTokenKind != TokenKind::CloseParenthesis) { //å¦‚æœä¸ä¸º)åˆ™è¯´æ˜åé¢ä»éœ€åˆ¤æ–­
             V = ParseCmpOpRHS(LHS);
         }
         break;
@@ -479,7 +544,7 @@ std::shared_ptr<ExprAST> Parser::ParseCmpOpRHS(std::shared_ptr<ExprAST> LHS) {
     shared_ptr<ExprAST> RHS = nullptr;
     switch (curTokenKind) {
     case TokenKind::Identifier: {
-        if (!VariableInfo_umap.count(curToken.getTokenStr())) { //Èç¹û¸Ã±êÊ¶·û²»´æÔÚ£¬ÔòËµÃ÷µ÷ÓÃÎ´¶¨Òå±êÊ¶·û
+        if (!VariableInfo_umap.count(curToken.getTokenStr())) { //å¦‚æœè¯¥æ ‡è¯†ç¬¦ä¸å­˜åœ¨ï¼Œåˆ™è¯´æ˜è°ƒç”¨æœªå®šä¹‰æ ‡è¯†ç¬¦
             string tmpStr = "use of undeclared identifier '";
             tmpStr += curToken.getTokenStr();
             tmpStr += "'";
@@ -518,26 +583,26 @@ std::shared_ptr<ExprAST> Parser::ParseIdentifierExpr(TokenKind varType) {
     case TokenKind::VoidKeyword:
     case TokenKind::FloatKeyword:
     case TokenKind::DoubleKeyword:{
-        if (VariableInfo_umap.count(IdName)) { //Èç¹û¸Ã±êÊ¶·ûÒÑ¾­´æÔÚ£¬ÔòËµÃ÷ÖØ¸´¶¨Òå
+        if (VariableInfo_umap.count(IdName)) { //å¦‚æœè¯¥æ ‡è¯†ç¬¦å·²ç»å­˜åœ¨ï¼Œåˆ™è¯´æ˜é‡å¤å®šä¹‰
             LE.addnote("previous definition here", curToken.TL.m_tokenLine);
             return nullptr;
         }
-        //Èç¹ûÎªÊ×´Î¶¨Òå£¬ÔòË¢ĞÂVF½á¹¹ÌåÄÚµÄ±äÁ¿ĞÅÏ¢£¬²¢¼ÓÈë±äÁ¿±í
+        //å¦‚æœä¸ºé¦–æ¬¡å®šä¹‰ï¼Œåˆ™åˆ·æ–°VFç»“æ„ä½“å†…çš„å˜é‡ä¿¡æ¯ï¼Œå¹¶åŠ å…¥å˜é‡è¡¨
         VF.name = IdName;
         VF.kind = TokenKindtoString(varType);
         VariableInfo_umap[IdName] = VF;
-        variableTypeFlag = TokenKind::NullKeyword; //½«±êÊ¶·ûflag»¹Ô­
+        variableTypeFlag = TokenKind::NullKeyword; //å°†æ ‡è¯†ç¬¦flagè¿˜åŸ
         break;
     }
-    case TokenKind::NullKeyword: {//ËµÃ÷·Ç¶¨Òå±äÁ¿£¬¸Ã±êÊ¶·û±»µ÷ÓÃ
-        TokenKind nextTokenKind = m_tokenVector[m_offset].getTokenKind();
+    case TokenKind::NullKeyword: {//è¯´æ˜éå®šä¹‰å˜é‡ï¼Œè¯¥æ ‡è¯†ç¬¦è¢«è°ƒç”¨
+        TokenKind nextTokenKind = m_tokenVector[m_offset+1].getTokenKind();
         //TokenKind n_nextTokenKind = m_tokenVector[m_offset + 1].getTokenKind();
-        if (isClassName(curToken.getTokenStr()) || nextTokenKind == TokenKind::OpenParenthesis || nextTokenKind == TokenKind::Star || nextTokenKind == TokenKind::Dot || nextTokenKind == TokenKind::MemberPointerAccess) { //µ±Ç°ÎªÒ»¸öº¯Êı
-            auto V = handlObj(); //ÔİÊ±²»ÓÃreturn 
+        if (isClassName(curToken.getTokenStr()) || nextTokenKind == TokenKind::OpenParenthesis || nextTokenKind == TokenKind::Star || nextTokenKind == TokenKind::Dot || nextTokenKind == TokenKind::MemberPointerAccess) { //å½“å‰ä¸ºä¸€ä¸ªå‡½æ•°
+            auto V = handlObj(); //æš‚æ—¶ä¸ç”¨return 
             //getNextToken(); //eat
-            return V; //²»ÄÜ·µ»ØÒ»¸ö¿Õ
+            return V; //ä¸èƒ½è¿”å›ä¸€ä¸ªç©º
         }
-        else if (!VariableInfo_umap.count(IdName) && nextTokenKind != TokenKind::OpenParenthesis) { //Èç¹û¸Ã±êÊ¶·û²»´æÔÚ£¬ÔòËµÃ÷µ÷ÓÃÎ´¶¨Òå±êÊ¶·û
+        else if (!VariableInfo_umap.count(IdName) && nextTokenKind != TokenKind::OpenParenthesis) { //å¦‚æœè¯¥æ ‡è¯†ç¬¦ä¸å­˜åœ¨ï¼Œåˆ™è¯´æ˜è°ƒç”¨æœªå®šä¹‰æ ‡è¯†ç¬¦
             string tmpStr = "use of undeclared identifier '";
             tmpStr += IdName;
             tmpStr += "'";
@@ -547,13 +612,13 @@ std::shared_ptr<ExprAST> Parser::ParseIdentifierExpr(TokenKind varType) {
         
         break;
     }
-    default: //²»·ûºÏ¶¨ÒåÀàĞÍµÄ¹Ø¼ü×Ö
+    default: //ä¸ç¬¦åˆå®šä¹‰ç±»å‹çš„å…³é”®å­—
         LE.addnote("invaild type", curToken.TL.m_tokenLine);
         return nullptr;
         break;
     }
     getNextToken();
-    auto V = std::make_shared<VariableExprAST>(IdName, VariableInfo_umap[IdName].kind); //ĞèÒªÅĞ¶ÏºóÃæÊÇ·ñÎª;ºÅ?
+    auto V = std::make_shared<VariableExprAST>(IdName, VariableInfo_umap[IdName].kind); //éœ€è¦åˆ¤æ–­åé¢æ˜¯å¦ä¸º;å·?
     return std::move(V);
 }
 
@@ -575,11 +640,11 @@ std::shared_ptr<ExprAST> Parser::ParseExpression() {
     return ParseBinOpRHS(0, std::move(LHS));
 }
 
-std::shared_ptr<ExprAST> Parser::ParseBinOpRHS(int ExprPrec, std::shared_ptr<ExprAST> LHS) { //½âÎö¶şÔª±í´ïÊ½µÄÓÒ°ë²¿·Ö
+std::shared_ptr<ExprAST> Parser::ParseBinOpRHS(int ExprPrec, std::shared_ptr<ExprAST> LHS) { //è§£æäºŒå…ƒè¡¨è¾¾å¼çš„å³åŠéƒ¨åˆ†
     if (curTokenKind == TokenKind::Semicolon)
         return nullptr;
     while (1) {
-        int curTokenPrec = GetTokPrecedence(); //»ñÈ¡µ±Ç°TokenÔËËã·ûµÄÓÅÏÈ¼¶
+        int curTokenPrec = GetTokPrecedence(); //è·å–å½“å‰Tokenè¿ç®—ç¬¦çš„ä¼˜å…ˆçº§
         if (curTokenPrec < ExprPrec)
             return LHS;
         string BinOp = curToken.getTokenStr();
@@ -587,7 +652,7 @@ std::shared_ptr<ExprAST> Parser::ParseBinOpRHS(int ExprPrec, std::shared_ptr<Exp
         if (!RHS)
             return nullptr;
         LogP.addnote("->parsing a Binary Expression...");
-        int nextOpPrec = GetTokPrecedence(); //»ñÈ¡ÏÂÒ»¸öÔËËã·ûµÄÓÅÏÈ¼¶
+        int nextOpPrec = GetTokPrecedence(); //è·å–ä¸‹ä¸€ä¸ªè¿ç®—ç¬¦çš„ä¼˜å…ˆçº§
         if (curTokenPrec < nextOpPrec) {
             RHS = ParseBinOpRHS(curTokenPrec + 1, std::move(RHS));
             if (RHS == nullptr)
@@ -642,7 +707,7 @@ int Parser::GetTokPrecedence() {
     else if (curStr == ";" || curStr == ")") {
         return -1;
     }
-    else if (curStr != "+" //Ôö¼Ó¶ÔcurTokenKindµÄÅĞ¶Ï£¬ÔöÇ¿º¯Êı½¡×³ĞÔ
+    else if (curStr != "+" //å¢åŠ å¯¹curTokenKindçš„åˆ¤æ–­ï¼Œå¢å¼ºå‡½æ•°å¥å£®æ€§
         && curStr != "-"
         && curStr != "*"
         && curStr != "/"
@@ -673,7 +738,7 @@ int Parser::GetTokPrecedence() {
 
 std::shared_ptr<DefinitionAST> Parser::parseModule() {
     getNextToken();
-    return ParseModuleDefinition(); //´Ë´¦ÎŞ·¨Ã÷È·µ½µ×ÊÇ½âÎömoduleÉùÃ÷»¹ÊÇ¶¨Òå£¿
+    return ParseModuleDefinition(); //æ­¤å¤„æ— æ³•æ˜ç¡®åˆ°åº•æ˜¯è§£æmoduleå£°æ˜è¿˜æ˜¯å®šä¹‰ï¼Ÿ
 }
 
 void Parser::handlModule() {
@@ -707,25 +772,26 @@ void Parser::handlAlways_comb() {
 
 void Parser::handlFunc() {
     cout << "Parsing function: " << curToken.getTokenStr()<<" ";
-    Token nextToken = m_tokenVector[m_offset];
-    TokenKind nextTokenKind = nextToken.getTokenKind();
-    if (nextTokenKind == TokenKind::Identifier && isClassName(nextToken.getTokenStr())) {
-        cout << nextToken.getTokenStr() << "::";
+    Token curToken1 = m_tokenVector[m_offset];
+    TokenKind curTokenKind1 = curToken1.getTokenKind();
+    if (curTokenKind1 == TokenKind::Identifier && isClassName(curToken1.getTokenStr())) {
+        cout << curToken1.getTokenStr() << "::";
         getNextToken(); //eat ClassName
         getNextToken(); //eat ':'
-        getNextToken(); //eat ';'
-        getNextToken(); //eat 
+        getNextToken();
     }
-    cout << curToken.getTokenStr() << "()..." << endl;
+    cout << curToken1.getTokenStr() << "()..." << endl;
+    string a = curToken1.getTokenStr();
+    string b = TokenKindtoString(curTokenKind1);
     getNextToken(); //eat Identifier
-    if (curTokenKind != TokenKind::OpenParenthesis) { //Èç¹û´ËÊ±ÏÂÒ»¸öTokenÊÇ'('£¬ÔòËµÃ÷´ËÊ±ÊÇÒ»¸öº¯Êı
+    if (curTokenKind != TokenKind::OpenParenthesis) { //å¦‚æœæ­¤æ—¶ä¸‹ä¸€ä¸ªTokenæ˜¯'('ï¼Œåˆ™è¯´æ˜æ­¤æ—¶æ˜¯ä¸€ä¸ªå‡½æ•°
         --m_offset;
         curToken = m_tokenVector[--m_offset];
         curTokenKind = curToken.getTokenKind();
         cout << "-->Not a Funciton..." << endl;;
         return;
     }
-    while (curTokenKind != TokenKind::CloseParenthesis) { //Ìø¹ıfunc()À¨ºÅÖĞ²ÎÊı£¬¶ÔÓÚÉú³ÉumlÊ±ĞòÍ¼ÒâÒå²»´ó(ÔİÊ±²»¿¼ÂÇ²ÎÊıÉè¼Æº¯Êıµ÷ÓÃÇé¿ö)
+    while (curTokenKind != TokenKind::CloseParenthesis) { //è·³è¿‡func()æ‹¬å·ä¸­å‚æ•°ï¼Œå¯¹äºç”Ÿæˆumlæ—¶åºå›¾æ„ä¹‰ä¸å¤§(æš‚æ—¶ä¸è€ƒè™‘å‚æ•°è®¾è®¡å‡½æ•°è°ƒç”¨æƒ…å†µ)
         getNextToken();  //eat
     }
     getNextToken(); //eat )
@@ -738,31 +804,81 @@ void Parser::handlFunc() {
     }
 }
 
+
 std::shared_ptr<FuncAST> Parser::handlObj() {
     if (isFuncName(curToken.getTokenStr())) { //work()
         FuncCallInformation FC;
-        FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size()-3);
+        //todo ä¸­é—´èƒ½å¦ç©ºè¡Œï¼Œå…¨å±€å˜é‡åŒºåˆ†,ç»“æ„ä½“åŒºåˆ†
+        FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size() - 4);
+        string b = FC.invokeClassName;
+        string a = "main";
+        FC.callClassName = a;
         FC.FuncName = curToken.getTokenStr();
         cout << "parseing internal function..." << endl;
         cout << "---->" << FC.FuncName << "()" << endl;
+        m_pCList->addFuncCallInfo(FC);
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        getNextToken(); //eat ;
+        // getNextToken(); //eat ;
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
+        int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
+        // if (FC.FuncName != m_tokenVector[4].getTokenStr())
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
+        //ç»Ÿè®¡é€’å½’æ¬¡æ•°
+        unordered_map<int, int> tmpCurDescendantsSequenceMap;
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            tmpCurDescendantsSequenceMap[i] = i;
+        }
+        //ä»å­å­™èŠ‚ç‚¹ä¸­æçº¯å­èŠ‚ç‚¹
+        m_pCList->modifyDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
+        m_pCList->modifyDirectDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
+            for (auto j : tmpDescendantsSequenceMap) {
+                m_pCList->DeleteDirectDDescendantsSequenceEnum(curFuncCallOrder, j.first);
+            }
+        }
+        auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
+        //å°†å­èŠ‚ç‚¹çš„callClassNameè®¾ç½®ä¸ºå½“å‰ç±»å
+        for (auto i = tmpDescendantsSequenceMapFetch.begin(); i != tmpDescendantsSequenceMapFetch.end(); ++i) {
+            m_pCList->setCallClassName(i->first, curFuncCallOrder);
+        }
+        //è£…è½½æ¿€æ´»ç›¸å…³ä¿¡æ¯
+        auto activationClassName = m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
+        m_pCList->modifyClassActivationInfo(activationClassName, curFuncCallOrder, 1);
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            if (m_pCList->getActivationInfo().at(activationClassName).find(i) == m_pCList->getActivationInfo().at(activationClassName).end()) {
+                m_pCList->modifyClassActivationInfo(activationClassName, i, 1);
+            }
+            else {
+                auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
+                for (auto j : tmpDescendantsSequenceMap) {
+                    int k = m_pCList->getActivationInfo().at(activationClassName).at(j.first) + 1;
+                    m_pCList->modifyClassActivationInfo(activationClassName, i, k);
+                }
+            }
+        }
+
+        // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
+        // Parser (m_hTokenFlows, m_cppTokenFlows, targetTokenFlows2, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         return make_shared<FuncAST>(FC.FuncName);
     }
-    Token nextToken = m_tokenVector[m_offset];
+    cout << curToken.getTokenStr();
+    Token nextToken = m_tokenVector[m_offset + 1];
     TokenKind nextTokenKind = nextToken.getTokenKind();
-    Token n_nextToken = m_tokenVector[m_offset + 1]; //nextµÄnext
+    Token n_nextToken = m_tokenVector[m_offset + 2]; //nextï¿½ï¿½next
     TokenKind n_nextTokenKind = n_nextToken.getTokenKind();
     //case1: A a();
     if (nextTokenKind == TokenKind::Identifier) {
         ObjInstantiation_umap[curToken.getTokenStr()].emplace_back(nextToken.getTokenStr()); //add ObjInstantiation_umap
         while (curTokenKind != TokenKind::Semicolon) {
+            cout << curToken.getTokenStr() + "---------";
+            cout << nextToken.getTokenStr() + "000000";
             getNextToken();
         }
+        cout << "next";
         //getNextToken(); //eat ;
         return make_shared<FuncAST>(nextToken.getTokenStr());
     }
@@ -777,8 +893,9 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
     }
     //case3: a.work();
     else if (nextTokenKind == TokenKind::Dot) {
-        //µ±Ç°curTokenÊÇa,ĞèÒªÍ¨¹ıaÕÒµù
+        //å½“å‰curTokenæ˜¯a,éœ€è¦é€šè¿‡aæ‰¾çˆ¹
         FuncCallInformation FC;
+        string b = curToken.getTokenStr();
         FC.invokeClassName = findClassName(curToken.getTokenStr());
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat Dot;
@@ -786,7 +903,13 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         string a = "main";
         FC.callClassName = a;
         //FuncCallInformation_umap[getClassCounter()] = FC;
+        int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
+        //m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
+        int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
+        string e = FC.invokeClassName;
+        string d = ((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
+        string f = ((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
@@ -794,42 +917,61 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
-        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
-        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
-        //Í³¼Æµİ¹é´ÎÊı
+        //ç»Ÿè®¡é€’å½’æ¬¡æ•°
         unordered_map<int, int> tmpCurDescendantsSequenceMap;
         for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
             tmpCurDescendantsSequenceMap[i] = i;
         }
-        //´Ó×ÓËï½ÚµãÖĞÌá´¿×Ó½Úµã
+        //ä»å­å­™èŠ‚ç‚¹ä¸­æçº¯å­èŠ‚ç‚¹
         m_pCList->modifyDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
         m_pCList->modifyDirectDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
         for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
             auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
-            for (auto j = tmpDescendantsSequenceMap.begin(); j != tmpDescendantsSequenceMap.end(); ++j) {
-                m_pCList->DeleteDirectDDescendantsSequenceEnum(curFuncCallOrder, j->first);
+            for (auto j : tmpDescendantsSequenceMap) {
+                m_pCList->DeleteDirectDDescendantsSequenceEnum(curFuncCallOrder, j.first);
             }
         }
         auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
-        //½«×Ó½ÚµãµÄcallClassNameÉèÖÃÎªµ±Ç°ÀàÃû
+        //å°†å­èŠ‚ç‚¹çš„callClassNameè®¾ç½®ä¸ºå½“å‰ç±»å
         for (auto i = tmpDescendantsSequenceMapFetch.begin(); i != tmpDescendantsSequenceMapFetch.end(); ++i) {
             m_pCList->setCallClassName(i->first, curFuncCallOrder);
         }
+        //è£…è½½æ¿€æ´»ç›¸å…³ä¿¡æ¯
+        auto activationClassName = m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
+        m_pCList->modifyClassActivationInfo(activationClassName, curFuncCallOrder, 1);
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            if (m_pCList->getActivationInfo().at(activationClassName).find(i) == m_pCList->getActivationInfo().at(activationClassName).end()) {
+                m_pCList->modifyClassActivationInfo(activationClassName, i, 1);
+            }
+            else {
+                auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
+                for (auto j : tmpDescendantsSequenceMap) {
+                    int k = m_pCList->getActivationInfo().at(activationClassName).at(j.first) + 1;
+                    m_pCList->modifyClassActivationInfo(activationClassName, i, k);
+                }
+            }
+        }
+
         if (!((m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName.size())) {
             (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName = "Main";
         }
-        //²âÊÔµÃµ½µÄÄÚÈİ
+
+        //æµ‹è¯•å¾—åˆ°çš„å†…å®¹
         cout << (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName << endl;
-        cout << (m_pCList->getFuncCallInfo()).at(2).callClassName << "++++++---" << endl;
+
 
         // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
         // Parser (m_hTokenFlows, m_cppTokenFlows, targetTokenFlows2, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         return make_shared<FuncAST>(FC.FuncName);
     }
+
+
     //case4: a->work();
     else if (nextTokenKind == TokenKind::MemberPointerAccess) {
-        //µ±Ç°curTokenÊÇa,ĞèÒªÍ¨¹ıaÕÒµù
+        //å½“å‰curTokenæ˜¯a,éœ€è¦é€šè¿‡aæ‰¾çˆ¹
         FuncCallInformation FC;
         FC.invokeClassName = findClassName(curToken.getTokenStr());
         getNextToken(); //eat Indentifier,like 'a'
@@ -845,29 +987,49 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //getNextToken(); //eat ;
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "->" << FC.FuncName << "()" << endl;
+        //
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
-        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
-        //Í³¼Æµİ¹é´ÎÊı
+        //ç»Ÿè®¡é€’å½’æ¬¡æ•°
         unordered_map<int, int> tmpCurDescendantsSequenceMap;
         for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
             tmpCurDescendantsSequenceMap[i] = i;
         }
-        //´Ó×ÓËï½ÚµãÖĞÌá´¿×Ó½Úµã
+        //ä»å­å­™èŠ‚ç‚¹ä¸­æçº¯å­èŠ‚ç‚¹
         m_pCList->modifyDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
         m_pCList->modifyDirectDescendantsSequence(curFuncCallOrder, tmpCurDescendantsSequenceMap);
         for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
             auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
-            for (auto j = tmpDescendantsSequenceMap.begin(); j != tmpDescendantsSequenceMap.end(); ++j) {
-                m_pCList->DeleteDirectDDescendantsSequenceEnum(curFuncCallOrder, j->first);
+            for (auto j : tmpDescendantsSequenceMap) {
+                m_pCList->DeleteDirectDDescendantsSequenceEnum(curFuncCallOrder, j.first);
             }
         }
         auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
-        //½«×Ó½ÚµãµÄcallClassNameÉèÖÃÎªµ±Ç°ÀàÃû
+        //å°†å­èŠ‚ç‚¹çš„callClassNameè®¾ç½®ä¸ºå½“å‰ç±»å
         for (auto i = tmpDescendantsSequenceMapFetch.begin(); i != tmpDescendantsSequenceMapFetch.end(); ++i) {
             m_pCList->setCallClassName(i->first, curFuncCallOrder);
         }
+        if (!((m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName.size())) {
+            (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName = "Main";
+        }
+        //è£…è½½æ¿€æ´»ç›¸å…³ä¿¡æ¯
+        auto activationClassName = m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
+        m_pCList->modifyClassActivationInfo(activationClassName, curFuncCallOrder, 1);
+        for (int i = curFuncCallOrder + 1; i <= afterDfsCallOrder; i++) {
+            if (m_pCList->getActivationInfo().at(activationClassName).find(i) == m_pCList->getActivationInfo().at(activationClassName).end()) {
+                m_pCList->modifyClassActivationInfo(activationClassName, i, 1);
+            }
+            else {
+                auto tmpDescendantsSequenceMap = (m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
+                for (auto j : tmpDescendantsSequenceMap) {
+                    int k = m_pCList->getActivationInfo().at(activationClassName).at(j.first) + 1;
+                    m_pCList->modifyClassActivationInfo(activationClassName, i, k);
+                }
+            }
+        }
+
         if (!((m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName.size())) {
             (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName = "Main";
         }
@@ -882,18 +1044,22 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
 std::shared_ptr<WhileAST>  Parser::ParseWhile() {
     cout << "Parsing while..." << endl;
     getNextToken(); //eat while
-    if (curTokenKind != TokenKind::OpenParenthesis) { //while¸ñÊ½²ĞÈ±£¬expected '('
+    if (curTokenKind != TokenKind::OpenParenthesis) { //whileæ ¼å¼æ®‹ç¼ºï¼Œexpected '('
+        LE.addnote("expcted '('", curToken.TL.m_tokenLine);
         return nullptr;
     }
     getNextToken(); //eat '('
     auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
     auto cmp = ParseCmpOpRHS(LHS);
     getNextToken(); //eat ')'
-    if (curTokenKind != TokenKind::OpenBrace) { //while¸ñÊ½²ĞÈ±£¬expected '{'
+    if (curTokenKind != TokenKind::OpenBrace) { //whileæ ¼å¼æ®‹ç¼ºï¼Œexpected '{'
+        LE.addnote("expcted ')'", curToken.TL.m_tokenLine);
         return nullptr;
     }
     getNextToken(); //eat '{'
     vector<shared_ptr<ExprAST>> exprs;
+    LoopInformation LP;
+    int start = m_pCList->getFuncCallInfo().size();
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
@@ -901,9 +1067,20 @@ std::shared_ptr<WhileAST>  Parser::ParseWhile() {
             getNextToken(); //eat ';'
         }
     }
+    int end = m_pCList->getFuncCallInfo().size();
+    for (int i = start; i < end; i++) {
+        LP.timeLine.push_back(i);
+        LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).callClassName);
+        LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).invokeClassName);
+    }
+    m_pCList->addLoopInfo(LP);
     getNextToken(); //eat '}'
     return make_shared<WhileAST>(cmp, exprs);
 }
+/*
+std::shared_ptr<WhileAST>  Parser::ParseDoWhile() {
+
+}*/
 
 void Parser::handInitial() {
     getNextToken();
@@ -964,21 +1141,21 @@ string Parser::findClassName(string targetStr) {
 }
 
 /*
-function: ÕÒµ½a.work()ÖĞaµÄclassµÄ.cppÎÄ¼ş´Ê·¨·ÖÎöºóµÄtokenflow£¬É¸Ñ¡³öÆäÖĞwork()µÄtoken
-param: Ä¿±êº¯ÊıÃû£¬Ä¿±ê.cppÎÄ¼şÃû
-return: É¸Ñ¡µÃµ½µÄtokenflow
+function: æ‰¾åˆ°a.work()ä¸­açš„classçš„.cppæ–‡ä»¶è¯æ³•åˆ†æåçš„tokenflowï¼Œç­›é€‰å‡ºå…¶ä¸­work()çš„token
+param: ç›®æ ‡å‡½æ•°åï¼Œç›®æ ‡.cppæ–‡ä»¶å
+return: ç­›é€‰å¾—åˆ°çš„tokenflow
 */
 vector<Token> Parser::filterTokenFlow(string targetFuncName, string targetfFleName) {
     vector<Token> MresTokenFlow;
     vector<Token> resTokenFlow;
-    for (int i = 0; i < m_cppTokenFlows[targetfFleName].size(); i++) { //±éÀúÉ¨Ãè¸Ã.cppÎÄ¼şµÄÕû¸ötokenflow
+    for (int i = 0; i < m_cppTokenFlows[targetfFleName].size(); i++) { //éå†æ‰«æè¯¥.cppæ–‡ä»¶çš„æ•´ä¸ªtokenflow
         Token nextFourToken;
         Token curToken = m_cppTokenFlows[targetfFleName][i];
         if (i <= m_cppTokenFlows[targetfFleName].size() - 4) {
             nextFourToken = m_cppTokenFlows[targetfFleName][i+4];
         }
         //vector<Token> resTokenFlow;
-        if (Type_uset.count(curToken.getTokenKind()) && nextFourToken.getTokenStr() == targetFuncName) { //ÕÒµ½Ä¿±êº¯ÊıtokenÎ»ÖÃ
+        if (Type_uset.count(curToken.getTokenKind()) && nextFourToken.getTokenStr() == targetFuncName) { //æ‰¾åˆ°ç›®æ ‡å‡½æ•°tokenä½ç½®
             for (int j = i; j < m_cppTokenFlows[targetfFleName].size(); j++) {
                 Token tmpToken = m_cppTokenFlows[targetfFleName][j];
                 //vector<Token> resTokenFlow;
@@ -992,7 +1169,7 @@ vector<Token> Parser::filterTokenFlow(string targetFuncName, string targetfFleNa
             break;
         }
     }
-    resTokenFlow = MresTokenFlow; //ÓÉÓÚ±àÒëÊ±·ûºÅ±í¿ÉÄÜ³öÏÖÁËÎÊÌâ²úÉúbug£¬¹Ê´ËÍÑ¿ã×Ó·ÅÆ¨
+    resTokenFlow = MresTokenFlow; //ç”±äºç¼–è¯‘æ—¶ç¬¦å·è¡¨å¯èƒ½å‡ºç°äº†é—®é¢˜äº§ç”Ÿbugï¼Œæ•…æ­¤è„±è£¤å­æ”¾å±
     return resTokenFlow;
 }
 
@@ -1007,7 +1184,7 @@ bool Parser::isClassName(string name) {
 bool Parser::isFuncName(string targetStr) {
     string hFile = m_curFileName.substr(0, m_curFileName.size() - 3) + "h";
     for (auto i : m_hTokenFlows[hFile]) {
-        if (i.getTokenStr() == targetStr) { //¿ÉÔö¼ÓÌõ¼şÏŞÖÆ£¬±£ÕÏ½¡×³ĞÔ
+        if (i.getTokenStr() == targetStr) { //å¯å¢åŠ æ¡ä»¶é™åˆ¶ï¼Œä¿éšœå¥å£®æ€§
             return true;
         }
     }

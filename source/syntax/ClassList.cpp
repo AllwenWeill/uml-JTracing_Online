@@ -7,7 +7,11 @@ ClassList::ClassList()
 }
 
 void ClassList::addFuncCallInfo(FuncCallInformation FC) {
+	int  c = FuncCallInformation_umap.size();
+	string a = FC.invokeClassName;
 	FuncCallInformation_umap[getClassCounter()] = FC;
+	string b = FuncCallInformation_umap.at(m_classCounter).invokeClassName;
+	int  d = FuncCallInformation_umap.size();
 }
 
 void ClassList::modifyDescendantsSequence(int position, unordered_map<int, int> tmpCurDescendantsSequenceMap) {
@@ -26,13 +30,18 @@ void ClassList::setCallClassName(int callPosition, int beCallPosition) {
 	FuncCallInformation_umap.at(callPosition).callClassName = FuncCallInformation_umap.at(beCallPosition).invokeClassName;
 }
 
-void ClassList::addLoopInfo(vector<string> LP) {
+void ClassList::modifyClassActivationInfo(string className, int key, int value) {
+	ClassActivation_umap[className][key] = value;
+}
+
+void ClassList::addLoopInfo(LoopInformation LP) {
 	Loop_umap[getClassCounter()] = LP;
 }
 
-void ClassList::addAltInfo() {
-
+void ClassList::addAltInfo(AltInformation AT) {
+	Alt_umap[getClassCounter()] = AT;
 }
+
 void ClassList::addClassActivationInfo() {
 
 }
@@ -41,17 +50,25 @@ unordered_map<int, FuncCallInformation> ClassList::getFuncCallInfo() {
 	return FuncCallInformation_umap;
 }
 
-unordered_map<int, vector<string>> ClassList::getLoopInfo() {
+unordered_map<string, unordered_map<int, int>> ClassList::getActivationInfo() {
+	return ClassActivation_umap;
+}
+
+void ClassList::modifyAltInfo(AltInformation AT, int elsePosition) {
+	for (int i = 0; i < AT.altIncludeClassName.size(); i++)
+		Alt_umap[Alt_umap.size()].altIncludeClassName.push_back(AT.altIncludeClassName[i]);
+	Alt_umap[Alt_umap.size()].elseTimeLine.push_back(elsePosition);
+}
+
+unordered_map<int, LoopInformation> ClassList::getLoopInfo() {
 	return Loop_umap;
 }
 
-unordered_map<int, vector<string>> ClassList::getAltInfo() {
+unordered_map<int, AltInformation> ClassList::getAltInfo() {
 	return Alt_umap;
 }
 
-unordered_map<string, vector<int>> ClassList::getClassActivationInfo() {
-	return ClassActivation_umap;
-}
+
 
 int ClassList::getClassCounter() {
 	return ++m_classCounter;
@@ -91,8 +108,13 @@ bool ClassList::writeUMLfile_LoopTable() {
 	umlFile << "looporder    loopclassname   		      timeline" << endl;
 	int count = 0;
 	for (auto lc : Loop_umap) {
-		umlFile << ++count; // undo,可以利用输出vector和umap的模板，来简化此处遍历整个容器去输出的代码，更加规范，利用：outputVector和outputUmap两个函数
-		
+		umlFile << ++count << "          ";
+		for (int i = 0; i < lc.second.loopIcludeClassName.size(); i++)
+			umlFile << lc.second.loopIcludeClassName[i] << ",";
+		umlFile << "     ";
+		for (int i = 0; i < lc.second.timeLine.size(); i++)
+			umlFile << lc.second.timeLine[i] << ",";
+		umlFile << "   " << endl;
 	}
 	umlFile.close();
 	if (!fs::exists(m_LoopTablePath))
@@ -105,8 +127,17 @@ bool ClassList::writeUMLfile_AltTable() {
 	umlFile.open(m_AltTablePath, 0x02);
 	umlFile << "altorder    altclassname            timeline        elsetimeline" << endl;
 	int count = 0;
-	for (auto au : Alt_umap) {
-		umlFile << ++count << endl; // undo
+	for (auto at : Alt_umap) {
+		umlFile << ++count << "          ";
+		for (int i = 0; i < at.second.altIncludeClassName.size(); i++)
+			umlFile << at.second.altIncludeClassName[i] << ",";
+		umlFile << "     ";
+		for (int i = 0; i < at.second.timeLine.size(); i++)
+			umlFile << at.second.timeLine[i] << ",";
+		umlFile << "     ";
+		for (int i = 0; i < at.second.timeLine.size(); i++)
+			umlFile << at.second.elseTimeLine[i] << ",";
+		umlFile << "   " << endl;
 	}
 	umlFile.close();
 	if (!fs::exists(m_AltTablePath))
@@ -119,7 +150,14 @@ bool ClassList::writeUMLfile_ActivationTable() {
 	umlFile.open(m_ActivationTablePath, 0x02);
 	umlFile << "classname  activiationtime" << endl;
 	int count = 0;
-									// undo
+	for (auto fc : ClassActivation_umap) {
+		umlFile << ++count << "      " << fc.first << "   ";
+		for (auto fe : ClassActivation_umap.at(fc.first)) {
+			umlFile << fe.first << "." << fe.second;
+			umlFile << ", ";
+		}
+		umlFile << "     " << endl;
+	}
 	umlFile.close();
 	if (!fs::exists(m_ActivationTablePath))
 		return false;

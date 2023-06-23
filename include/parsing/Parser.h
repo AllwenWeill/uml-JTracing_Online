@@ -54,6 +54,7 @@ private:
     std::shared_ptr<ObjCallFuncPAST> ParseObjCallFuncP();
     std::shared_ptr<ObjCallFuncAAST> ParseObjCallFuncA();
     std::shared_ptr<WhileAST> ParseWhile();
+    std::shared_ptr<WhileAST> ParseDoWhile();
     void mainParser();
     void handlReturn();
     void getNextToken();
