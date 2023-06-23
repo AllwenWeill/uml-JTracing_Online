@@ -1,7 +1,7 @@
 #include "ClassList.h"
 
 ClassList::ClassList() 
-	:m_classCounter(0)
+	:m_classCounter(0),m_altCounter(0),m_loopCounter(0)
 {
 	cout << "<Start building ClassList...>" << endl;
 }
@@ -30,14 +30,11 @@ void ClassList::modifyClassActivationInfo(string className,int key,int value){
 }
 
 void ClassList::addLoopInfo(LoopInformation LP) {
-    Loop_umap[getClassCounter()] = LP;
+    Loop_umap[getLoopCounter()] = LP;
 }
 void ClassList::addAltInfo (AltInformation AT) {
-    int p =Alt_umap.size();
-    Alt_umap[p+1] =AT;
-}
-void ClassList::addClassActivationInfo() {
-
+    //int p =Alt_umap.size();
+    Alt_umap[getAltCounter()] =AT;
 }
 
 unordered_map<int, FuncCallInformation> ClassList::getFuncCallInfo() {
@@ -62,7 +59,12 @@ unordered_map<int, AltInformation> ClassList::getAltInfo() {
 int ClassList::getClassCounter() {
 	return ++m_classCounter;
 }
-
+int ClassList::getAltCounter() {
+    return ++m_altCounter;
+}
+int ClassList::getLoopCounter() {
+    return ++m_loopCounter;
+}
 template<typename T>
 void ClassList::outputVector(vector<T> vec) {
     for (auto v : vec) {

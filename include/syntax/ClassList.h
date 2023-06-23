@@ -29,19 +29,22 @@ struct LoopInformation{
 class ClassList {
 private:
     std::ofstream umlFile;
-    //int m_classCounter;
+    int m_classCounter;
+    int m_altCounter;
+    int m_loopCounter;
     fs::path m_FuncTablePath;
     fs::path m_LoopTablePath;
     fs::path m_AltTablePath;
     fs::path m_ActivationTablePath;
-
+    unordered_map<int, FuncCallInformation> FuncCallInformation_umap;
     unordered_map<int, LoopInformation> Loop_umap;
     unordered_map<int, AltInformation> Alt_umap;
     unordered_map<string, unordered_map<int,int>> ClassActivation_umap;
     int getClassCounter();
+    int getAltCounter();
+    int getLoopCounter();
 public:
-    int m_classCounter;
-    unordered_map<int, FuncCallInformation> FuncCallInformation_umap;
+    //int m_classCounter;
     void modifyDescendantsSequence(int position,unordered_map<int,int> tmpCurDescendantsSequenceMap);
     void modifyDirectDescendantsSequence(int position ,unordered_map<int,int> tmpCurDescendantsSequenceMap);
     void DeleteDirectDDescendantsSequenceEnum(int position,int key);

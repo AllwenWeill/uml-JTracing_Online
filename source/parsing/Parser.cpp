@@ -923,9 +923,9 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //FuncCallInformation_umap[getClassCounter()] = FC;
         int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
-        m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
+       // m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
         int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
-        m_pCList-> m_classCounter =curFuncCallOrder22;
+        //m_pCList-> m_classCounter =curFuncCallOrder22;
         string e =FC.invokeClassName;
         string d =((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
         string f =((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
@@ -956,13 +956,13 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
         //将子节点的callClassName设置为当前类名
         for (auto i =tmpDescendantsSequenceMapFetch.begin(); i!= tmpDescendantsSequenceMapFetch.end();++i ){
-            string Test1= m_pCList->FuncCallInformation_umap[i->first].callClassName;
-            string test2=m_pCList->FuncCallInformation_umap.at(curFuncCallOrder).invokeClassName;
+            //string Test1= m_pCList->FuncCallInformation_umap[i->first].callClassName;
+            //string test2=m_pCList->FuncCallInformation_umap.at(curFuncCallOrder).invokeClassName;
             //m_pCList->setCallClassName(i->first,curFuncCallOrder);
-           m_pCList->FuncCallInformation_umap[i->first].callClassName =test2;
-           int p =i->first;
-           string test3=m_pCList->FuncCallInformation_umap.at(p).callClassName;
-           //m_pCList->setCallClassName(i->first,curFuncCallOrder);
+           //m_pCList->FuncCallInformation_umap[i->first].callClassName =test2;
+           //int p =i->first;
+         //  string test3=m_pCList->FuncCallInformation_umap.at(p).callClassName;
+           m_pCList->setCallClassName(i->first,curFuncCallOrder);
         }
         //装载激活相关信息
        auto activationClassName=m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
@@ -1003,13 +1003,13 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
             FC.callClassName ="Actor";
         int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
-        m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
+       // m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
         int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
-        m_pCList-> m_classCounter =curFuncCallOrder22;
+        //m_pCList-> m_classCounter =curFuncCallOrder22;
         string e =FC.invokeClassName;
         string d =((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
         string f =((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
-        //m_pCList->addFuncCallInfo(FC);
+        m_pCList->addFuncCallInfo(FC);
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
