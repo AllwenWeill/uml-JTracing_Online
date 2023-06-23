@@ -29,7 +29,7 @@ struct LoopInformation{
 class ClassList {
 private:
     std::ofstream umlFile;
-    int m_classCounter;
+    //int m_classCounter;
     fs::path m_FuncTablePath;
     fs::path m_LoopTablePath;
     fs::path m_AltTablePath;
@@ -40,21 +40,22 @@ private:
     unordered_map<string, unordered_map<int,int>> ClassActivation_umap;
     int getClassCounter();
 public:
+    int m_classCounter;
     unordered_map<int, FuncCallInformation> FuncCallInformation_umap;
-    void modifyDescendantsSequence(int ,unordered_map<int,int> );
-    void modifyDirectDescendantsSequence(int  ,unordered_map<int,int> );
-    void DeleteDirectDDescendantsSequenceEnum(int ,int );
-    void setCallClassName(int,int );
-    void addFuncCallInfo(FuncCallInformation );
-    void addLoopInfo( LoopInformation );
-    void addAltInfo(AltInformation);
+    void modifyDescendantsSequence(int position,unordered_map<int,int> tmpCurDescendantsSequenceMap);
+    void modifyDirectDescendantsSequence(int position ,unordered_map<int,int> tmpCurDescendantsSequenceMap);
+    void DeleteDirectDDescendantsSequenceEnum(int position,int key);
+    void setCallClassName(int callPosition,int beCallPosition );
+    void addFuncCallInfo(FuncCallInformation FC);
+    void addLoopInfo( LoopInformation LP);
+    void addAltInfo(AltInformation AT);
     void addClassActivationInfo();
     template<typename T>
     void outputVector(vector<T> vec);
     template<typename T>
     void outputUmap(unordered_map<T, T> umap);
     void modifyAltInfo(AltInformation ,int);
-    void modifyClassActivationInfo(string,int,int);
+    void modifyClassActivationInfo(string className,int key,int value);
     bool writeUMLfile_FuncTable();
     bool writeUMLfile_LoopTable();
     bool writeUMLfile_AltTable();

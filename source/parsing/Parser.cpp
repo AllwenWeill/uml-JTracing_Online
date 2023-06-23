@@ -61,7 +61,7 @@ void Parser::mainParser() {
         case TokenKind::ForKeyword:
             ParseFor();
             break;
-        case TokenKind::IffKeyword:
+        case TokenKind::IfKeyword:
             ParseIf();
             break;
         case TokenKind::ElseKeyword:
@@ -827,7 +827,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //todo 中间能否空行，全局变量区分,结构体区分
         FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size()-4);
         string b =FC.invokeClassName;
-        string a ="main";
+        string a ="Actor";
         FC.callClassName =a;
         FC.FuncName = curToken.getTokenStr();
         cout << "parseing internal function..." << endl;
@@ -918,13 +918,14 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat Dot;
         FC.FuncName = curToken.getTokenStr();
-        string a ="main";
+        string a ="Actor";
         FC.callClassName =a;
         //FuncCallInformation_umap[getClassCounter()] = FC;
         int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
-        //m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
+        m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
         int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
+        m_pCList-> m_classCounter =curFuncCallOrder22;
         string e =FC.invokeClassName;
         string d =((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
         string f =((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
@@ -955,7 +956,13 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
         //将子节点的callClassName设置为当前类名
         for (auto i =tmpDescendantsSequenceMapFetch.begin(); i!= tmpDescendantsSequenceMapFetch.end();++i ){
-           m_pCList->setCallClassName(i->first,curFuncCallOrder);
+            string Test1= m_pCList->FuncCallInformation_umap[i->first].callClassName;
+            string test2=m_pCList->FuncCallInformation_umap.at(curFuncCallOrder).invokeClassName;
+            //m_pCList->setCallClassName(i->first,curFuncCallOrder);
+           m_pCList->FuncCallInformation_umap[i->first].callClassName =test2;
+           int p =i->first;
+           string test3=m_pCList->FuncCallInformation_umap.at(p).callClassName;
+           //m_pCList->setCallClassName(i->first,curFuncCallOrder);
         }
         //装载激活相关信息
        auto activationClassName=m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
@@ -973,9 +980,6 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
             }
         }
 
-        if (!((m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName.size()) ){
-            (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName ="Main";
-        }
 
         //测试得到的内容
         cout<<(m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName<<endl ;
@@ -996,9 +1000,16 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         getNextToken(); //eat '->'
         FC.FuncName = curToken.getTokenStr();
         //FuncCallInformation_umap[getClassCounter()] = FC;
-        if ((m_pCList->getFuncCallInfo().size())==0)
-            FC.callClassName ="Main";
+            FC.callClassName ="Actor";
+        int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
+        m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
+        int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
+        m_pCList-> m_classCounter =curFuncCallOrder22;
+        string e =FC.invokeClassName;
+        string d =((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
+        string f =((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
+        //m_pCList->addFuncCallInfo(FC);
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }

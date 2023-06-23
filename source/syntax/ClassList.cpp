@@ -33,7 +33,8 @@ void ClassList::addLoopInfo(LoopInformation LP) {
     Loop_umap[getClassCounter()] = LP;
 }
 void ClassList::addAltInfo (AltInformation AT) {
-    Alt_umap[getClassCounter()] =AT;
+    int p =Alt_umap.size();
+    Alt_umap[p+1] =AT;
 }
 void ClassList::addClassActivationInfo() {
 
@@ -77,7 +78,7 @@ void ClassList::outputUmap(unordered_map<T, T> umap) {
 }
 
 bool ClassList::writeUMLfile_FuncTable() {
-    m_FuncTablePath = "/tmp/tmp.V41aZ2znkH/test/output/FuncTable.txt";
+    m_FuncTablePath = "/tmp/tmp.V41aZ2znkH/test/output/FuncTable2.txt";
     umlFile.open(m_FuncTablePath);
     umlFile << "functionorder	invokeClassName		Funcname	callClassName	Selfcall" << endl;
     int count = 0;
@@ -118,7 +119,7 @@ bool ClassList::writeUMLfile_AltTable() {
     umlFile << "altorder    altclassname            timeline        elsetimeline" << endl;
     int count = 0;
     for (auto at : Alt_umap) {
-        umlFile << ++count << "          ";
+        umlFile << at.first << "          ";
         for (int i =0;i<at.second.altIncludeClassName.size();i++)
             umlFile<<at.second.altIncludeClassName[i]<<",";
         umlFile<<"     ";
