@@ -80,7 +80,8 @@ void ClassList::outputUmap(unordered_map<T, T> umap) {
 }
 
 bool ClassList::writeUMLfile_FuncTable() {
-    m_FuncTablePath = "/tmp/tmp.V41aZ2znkH/test/output/FuncTable2.txt";
+
+    m_FuncTablePath = "/tmp/tmp.V41aZ2znkH/test/output/FuncTable4.txt";
     umlFile.open(m_FuncTablePath);
     umlFile << "functionorder	invokeClassName		Funcname	callClassName	Selfcall" << endl;
     int count = 0;
@@ -128,7 +129,7 @@ bool ClassList::writeUMLfile_AltTable() {
         for (int i =0;i<at.second.timeLine.size();i++)
             umlFile<<at.second.timeLine[i]<<",";
         umlFile<<"     ";
-        for (int i =0;i<at.second.timeLine.size();i++)
+        for (int i =0;i<at.second.elseTimeLine.size();i++)
         umlFile<<at.second.elseTimeLine[i]<<",";
         umlFile <<"   "<<endl;
     }
@@ -140,19 +141,18 @@ bool ClassList::writeUMLfile_AltTable() {
 }
 
 bool ClassList::writeUMLfile_ActivationTable() {
-    m_ActivationTablePath = "/tmp/tmp.V41aZ2znkH/test/output/ActivationTable.txt";
+    m_ActivationTablePath = "/tmp/tmp.V41aZ2znkH/test/output/ActivationTable3.txt";
     umlFile.open(m_ActivationTablePath );
     umlFile << "classname  activiationtime" << endl;
-    int count = 0;
+
     for(auto fc : ClassActivation_umap){
-        umlFile << ++count << "      " << fc.first << "   "  ;
+        umlFile << fc.first << "   "  ;
         for(auto fe:ClassActivation_umap.at(fc.first)){
             umlFile << fe.first<<"."<<  fe.second;
             umlFile<<", ";
         }
         umlFile<< "     "<<endl;
     }
-    // undo
     umlFile.close();
     if (!fs::exists(m_ActivationTablePath))
         return false;
@@ -161,7 +161,17 @@ bool ClassList::writeUMLfile_ActivationTable() {
 
 ClassList::~ClassList() {
     cout << "Complete the build ClassList!" << endl;
-
+    string startClassName = FuncCallInformation_umap.begin()->second.callClassName;
+     startClassName = FuncCallInformation_umap.begin()->second.callClassName;
+    for(int i = 1; i<=FuncCallInformation_umap.size();i++){
+        int newActivation =1;
+        if  (ClassActivation_umap.count(startClassName)>0){
+            if (ClassActivation_umap.at(startClassName).count(i)>0){
+                newActivation = ClassActivation_umap.at(startClassName).at(i)+1;
+            }
+        }
+        ClassActivation_umap[startClassName][i]=newActivation;
+    }
     if (writeUMLfile_FuncTable())
         std::cout << "build <FuncTable.txt> success!" << std::endl;
     else

@@ -1,12 +1,13 @@
 #include "Parser.h"
-Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName)
+Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName,string startClassName)
     :m_hTokenFlows(hTokenFlows),
     m_cppTokenFlows(cppTokenFlows),
     m_tokenVector(tokenVector),
     variableTypeFlag(TokenKind::NullKeyword),
     m_classNames(classNames),
     m_pCList(pCList),
-    m_curFileName(curFileName)
+    m_curFileName(curFileName),
+    m_startClassName(startClassName)
 {
     m_offset = 0;
     buildTypeUset();
@@ -48,9 +49,6 @@ void Parser::mainParser() {
             break;
         case TokenKind::InitialKeyword:
             handInitial();
-            break;
-        case TokenKind::Identifier:
-            handlObj();
             break;
         case TokenKind::IncludeKeyword:
             handInclude();
@@ -798,8 +796,6 @@ void Parser::handlFunc() {
         getNextToken();
     }
     cout << curToken1.getTokenStr() << "()..." << endl;
-    string a=curToken1.getTokenStr();
-    string b =TokenKindtoString(curTokenKind1);
     getNextToken(); //eat Identifier
     if (curTokenKind != TokenKind::OpenParenthesis) { //�����ʱ��һ��Token��'('����˵����ʱ��һ������
         --m_offset;
@@ -826,9 +822,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         FuncCallInformation FC;
         //todo 中间能否空行，全局变量区分,结构体区分
         FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size()-4);
-        string b =FC.invokeClassName;
-        string a ="Actor";
-        FC.callClassName =a;
+        FC.callClassName =m_startClassName;
         FC.FuncName = curToken.getTokenStr();
         cout << "parseing internal function..." << endl;
         cout << "---->" << FC.FuncName << "()" << endl;
@@ -840,7 +834,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
        // if (FC.FuncName != m_tokenVector[4].getTokenStr())
-        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp",m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int,int> tmpCurDescendantsSequenceMap;
@@ -876,9 +870,6 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                 }
             }
         }
-
-
-
         // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
         // Parser (m_hTokenFlows, m_cppTokenFlows, targetTokenFlows2, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         return make_shared<FuncAST>(FC.FuncName);
@@ -893,11 +884,9 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         ObjInstantiation_umap[curToken.getTokenStr()].emplace_back(nextToken.getTokenStr()); //add ObjInstantiation_umap
         while (curTokenKind != TokenKind::Semicolon) {
             cout<<curToken.getTokenStr()+"---------";
-            cout<<nextToken.getTokenStr()+"000000";
             getNextToken();
         }
         cout<<"next";
-        //getNextToken(); //eat ;
         return make_shared<FuncAST>(nextToken.getTokenStr());
     }
     //case2: A *a = new A();
@@ -906,29 +895,20 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        //getNextToken(); //eat ;
         return make_shared<FuncAST>(n_nextToken.getTokenStr());
     }
     //case3: a.work();
     else if (nextTokenKind == TokenKind::Dot) {
         //��ǰcurToken��a,��Ҫͨ��a�ҵ�
         FuncCallInformation FC;
-        string b =curToken.getTokenStr();
         FC.invokeClassName = findClassName(curToken.getTokenStr());
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat Dot;
         FC.FuncName = curToken.getTokenStr();
-        string a ="Actor";
-        FC.callClassName =a;
-        //FuncCallInformation_umap[getClassCounter()] = FC;
+        FC.callClassName =m_startClassName;
         int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
-       // m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
         int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
-        //m_pCList-> m_classCounter =curFuncCallOrder22;
-        string e =FC.invokeClassName;
-        string d =((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
-        string f =((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
@@ -937,7 +917,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
-        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp",m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int,int> tmpCurDescendantsSequenceMap;
@@ -956,12 +936,6 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         auto tmpDescendantsSequenceMapFetch = (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).directDescendantsSequence;
         //将子节点的callClassName设置为当前类名
         for (auto i =tmpDescendantsSequenceMapFetch.begin(); i!= tmpDescendantsSequenceMapFetch.end();++i ){
-            //string Test1= m_pCList->FuncCallInformation_umap[i->first].callClassName;
-            //string test2=m_pCList->FuncCallInformation_umap.at(curFuncCallOrder).invokeClassName;
-            //m_pCList->setCallClassName(i->first,curFuncCallOrder);
-           //m_pCList->FuncCallInformation_umap[i->first].callClassName =test2;
-           //int p =i->first;
-         //  string test3=m_pCList->FuncCallInformation_umap.at(p).callClassName;
            m_pCList->setCallClassName(i->first,curFuncCallOrder);
         }
         //装载激活相关信息
@@ -979,18 +953,10 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                 }
             }
         }
-
-
-        //测试得到的内容
-        cout<<(m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName<<endl ;
-
-
        // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
        // Parser (m_hTokenFlows, m_cppTokenFlows, targetTokenFlows2, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         return make_shared<FuncAST>(FC.FuncName);
     }
-
-
     //case4: a->work();
     else if (nextTokenKind == TokenKind::MemberPointerAccess) {
         //��ǰcurToken��a,��Ҫͨ��a�ҵ�
@@ -999,17 +965,10 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat '->'
         FC.FuncName = curToken.getTokenStr();
-        //FuncCallInformation_umap[getClassCounter()] = FC;
-            FC.callClassName ="Actor";
+        FC.callClassName =m_startClassName;
         int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
-       // m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
         int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
-        //m_pCList-> m_classCounter =curFuncCallOrder22;
-        string e =FC.invokeClassName;
-        string d =((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
-        string f =((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
-        m_pCList->addFuncCallInfo(FC);
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
@@ -1019,7 +978,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
-        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp",m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int,int> tmpCurDescendantsSequenceMap;
@@ -1119,8 +1078,11 @@ void Parser::handInitial() {
 
 void Parser::handInclude() {
     getNextToken(); //eat include;
+    if(curTokenKind == TokenKind::LessThan);{
+        getNextToken();
+        getNextToken();
+    }
     getNextToken(); //eat "";
-    string a =curToken.getTokenStr();
 }
 void Parser::handlReturn() {
     LogP.addnote("parsed return...");

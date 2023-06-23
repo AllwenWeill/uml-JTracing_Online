@@ -7,7 +7,7 @@ else {
 Chef CE;
 CE.cooking();
 }
-
+while (a ==5){
 Chef* CE2 = new Chef();
 CE2->getChefName();}
 
