@@ -4,9 +4,9 @@
 void Chef::cooking() {
     Test c2;
     c2.buyFood();
-	std::cout << "The chef is cooking..." << std::endl;
+    std::cout << "The chef is cooking..." << std::endl;
 
 }
 string Chef::getChefName() {
-	return "zzx";
+    return "zzx";
 }

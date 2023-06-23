@@ -1,5 +1,4 @@
 #include "Test.h"
 
-void Test::buyFood() {
-    std::cout<<"hhhhh"<<endl;
+void Test::buyFood(int a) {
 }

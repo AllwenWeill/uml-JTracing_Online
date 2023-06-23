@@ -13,7 +13,7 @@ public:
     int m_num;
     Actor2();
     ~Actor2() {};
-    void buyFood();
+    void buyFood(int);
 private:
     int getActorNum2();
 
