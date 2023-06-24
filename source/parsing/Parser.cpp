@@ -849,6 +849,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                  funcname =funcname+ m_tokenVector[m_offset + parentoffset].getTokenStr();
                 ++parentoffset;
             }
+            funcname =funcname +" ";
             funcname= funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
             FC.FuncName =funcname;
         }
@@ -940,6 +941,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                  funcname =funcname+ m_tokenVector[m_offset + parentoffset].getTokenStr();
                 ++parentoffset;
             }
+            funcname =funcname +" ";
             funcname= funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
             FC.FuncName =funcname;
         }
@@ -1011,6 +1013,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                  funcname =funcname+ m_tokenVector[m_offset + parentoffset].getTokenStr();
                 ++parentoffset;
             }
+            funcname =funcname +" ";
             funcname= funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
             FC.FuncName =funcname;
         }
