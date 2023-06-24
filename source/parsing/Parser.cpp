@@ -1,12 +1,13 @@
 ﻿#include "Parser.h"
-Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName)
+Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName, string startClassName)
     :m_hTokenFlows(hTokenFlows),
     m_cppTokenFlows(cppTokenFlows),
     m_tokenVector(tokenVector),
     variableTypeFlag(TokenKind::NullKeyword),
     m_classNames(classNames),
     m_pCList(pCList),
-    m_curFileName(curFileName)
+    m_curFileName(curFileName),
+    m_startClassName(startClassName)
 {
     m_offset = 0;
     buildTypeUset();
@@ -356,6 +357,7 @@ std::shared_ptr<Always_combAST> Parser::ParseAlways_comb() {
 
 std::shared_ptr<ForAST> Parser::ParseFor() {
     getNextToken(); //eat for关键字
+    LoopInformation LP;
     if (curTokenKind != TokenKind::OpenParenthesis) { //此时期待一个(
         LE.addnote("expected '('", curToken.TL.m_tokenLine);
         return nullptr;
@@ -366,11 +368,18 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
         LE.addnote("expected ';'", curToken.TL.m_tokenLine);
     }
     getNextToken(); //eat ;
+    int conditionLenth = 0;
+    string loopCondition;
+    while (m_tokenVector[m_offset + conditionLenth].getTokenKind() != TokenKind::Semicolon) {
+        loopCondition = loopCondition + m_tokenVector[m_offset + conditionLenth].getTokenStr();
+        ++conditionLenth;
+    }
     auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
     auto cmp = ParseCmpOpRHS(LHS);
     if (curTokenKind != TokenKind::Semicolon) {
         LE.addnote("expected ';'", curToken.TL.m_tokenLine);
     }
+    LP.LoopCondition = loopCondition;
     getNextToken(); //eat ;
     auto step = ParseExpression();
     if (curTokenKind != TokenKind::CloseParenthesis) {
@@ -384,7 +393,7 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
     }
     getNextToken(); //eat '{'
     vector<shared_ptr<ExprAST>> exprs;
-    LoopInformation LP;
+
     int start = m_pCList->getFuncCallInfo().size();
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
@@ -444,14 +453,22 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
         LE.addnote("expected expression", curToken.TL.m_tokenLine);
         return nullptr;
     }
-    auto cond = ParseParenExpr();
     vector<shared_ptr<ExprAST>> exprs;
+    int conditionLenth = 1;
+    string altCondition;
+    while (m_tokenVector[m_offset + conditionLenth].getTokenKind() != TokenKind::CloseParenthesis) {
+        altCondition = altCondition + m_tokenVector[m_offset + conditionLenth].getTokenStr();
+        ++conditionLenth;
+    }
+    auto cond = ParseParenExpr();
+    AltInformation AT;
+    AT.altCondition = altCondition;
+    int start = m_pCList->getFuncCallInfo().size();
     if (curTokenKind != TokenKind::OpenBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
     }
-    AltInformation AT;
-    int start = m_pCList->getFuncCallInfo().size();
+
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
@@ -473,9 +490,28 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
 std::shared_ptr<ExprAST> Parser::ParseElse() {
     LogP.addnote("->parsing else...");
     getNextToken(); //eat else
-    vector<shared_ptr<ExprAST>> exprs;
+    shared_ptr<ExprAST> cond = nullptr;
     AltInformation AT;
+    string elseCondition = "NULLCONDITION";
+    if (curTokenKind == TokenKind::IfKeyword) {
+        elseCondition.clear();
+        if (curTokenKind != TokenKind::OpenParenthesis) {
+            LE.addnote("expected expression", curToken.TL.m_tokenLine);
+            return nullptr;
+        }
+        int conditionLenth = 1;
+        while (m_tokenVector[m_offset + conditionLenth].getTokenKind() != TokenKind::CloseParenthesis) {
+            elseCondition = elseCondition + m_tokenVector[m_offset + conditionLenth].getTokenStr();
+            ++conditionLenth;
+        }
+        auto cond = ParseParenExpr();
+    }
+    vector<shared_ptr<ExprAST>> exprs;
     int start = m_pCList->getFuncCallInfo().size();
+    if (curTokenKind != TokenKind::OpenBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+    }
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
@@ -489,8 +525,8 @@ std::shared_ptr<ExprAST> Parser::ParseElse() {
         AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i + 1).invokeClassName);
     }
     int elseStartPosition = start + 1;
-    m_pCList->modifyAltInfo(AT, elseStartPosition);
-    return std::move(std::make_shared<ElseAST>(exprs));
+    m_pCList->modifyAltInfo(AT, elseStartPosition, elseCondition);
+    return std::move(std::make_shared<ElseAST>(cond, exprs));
 }
 
 std::shared_ptr<ExprAST> Parser::ParseParenExpr() { //不可适用于for()
@@ -810,10 +846,19 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         FuncCallInformation FC;
         //todo 中间能否空行，全局变量区分,结构体区分
         FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size() - 4);
-        string b = FC.invokeClassName;
-        string a = "main";
-        FC.callClassName = a;
+        FC.callClassName = m_startClassName;
         FC.FuncName = curToken.getTokenStr();
+        string funcname = FC.FuncName;
+        int parentoffset = 1;
+        if (m_tokenVector[m_offset + parentoffset].getTokenKind() == TokenKind::OpenParenthesis) {
+            while (m_tokenVector[m_offset + parentoffset].getTokenKind() != TokenKind::CloseParenthesis) {
+                funcname = funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+                ++parentoffset;
+            }
+            funcname = funcname + " ";
+            funcname = funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+            FC.FuncName = funcname;
+        }
         cout << "parseing internal function..." << endl;
         cout << "---->" << FC.FuncName << "()" << endl;
         m_pCList->addFuncCallInfo(FC);
@@ -824,7 +869,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         // if (FC.FuncName != m_tokenVector[4].getTokenStr())
-        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int, int> tmpCurDescendantsSequenceMap;
@@ -860,7 +905,6 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                 }
             }
         }
-
         // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
         // Parser (m_hTokenFlows, m_cppTokenFlows, targetTokenFlows2, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         return make_shared<FuncAST>(FC.FuncName);
@@ -875,11 +919,9 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         ObjInstantiation_umap[curToken.getTokenStr()].emplace_back(nextToken.getTokenStr()); //add ObjInstantiation_umap
         while (curTokenKind != TokenKind::Semicolon) {
             cout << curToken.getTokenStr() + "---------";
-            cout << nextToken.getTokenStr() + "000000";
             getNextToken();
         }
         cout << "next";
-        //getNextToken(); //eat ;
         return make_shared<FuncAST>(nextToken.getTokenStr());
     }
     //case2: A *a = new A();
@@ -888,28 +930,30 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
-        //getNextToken(); //eat ;
         return make_shared<FuncAST>(n_nextToken.getTokenStr());
     }
     //case3: a.work();
     else if (nextTokenKind == TokenKind::Dot) {
-        //当前curToken是a,需要通过a找爹
+        //通过a来找爹
         FuncCallInformation FC;
-        string b = curToken.getTokenStr();
         FC.invokeClassName = findClassName(curToken.getTokenStr());
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat Dot;
         FC.FuncName = curToken.getTokenStr();
-        string a = "main";
-        FC.callClassName = a;
-        //FuncCallInformation_umap[getClassCounter()] = FC;
-        int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
+        string funcname = FC.FuncName;
+        int parentoffset = 1;
+        if (m_tokenVector[m_offset + parentoffset].getTokenKind() == TokenKind::OpenParenthesis) {
+            while (m_tokenVector[m_offset + parentoffset].getTokenKind() != TokenKind::CloseParenthesis) {
+                funcname = funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+                ++parentoffset;
+            }
+            funcname = funcname + " ";
+            funcname = funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+            FC.FuncName = funcname;
+        }
+        FC.callClassName = m_startClassName;
         m_pCList->addFuncCallInfo(FC);
-        //m_pCList->FuncCallInformation_umap[curFuncCallOrder21+1]=FC;
-        int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
-        string e = FC.invokeClassName;
-        string d = ((m_pCList->getFuncCallInfo())[curFuncCallOrder22]).invokeClassName;
-        string f = ((m_pCList->getFuncCallInfo())[curFuncCallOrder21]).invokeClassName;
+
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
@@ -918,7 +962,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
-        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int, int> tmpCurDescendantsSequenceMap;
@@ -954,33 +998,35 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                 }
             }
         }
-
-        if (!((m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName.size())) {
-            (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName = "Main";
-        }
-
-        //测试得到的内容
-        cout << (m_pCList->getFuncCallInfo()).at(curFuncCallOrder).callClassName << endl;
-
-
         // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
         // Parser (m_hTokenFlows, m_cppTokenFlows, targetTokenFlows2, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
         return make_shared<FuncAST>(FC.FuncName);
     }
-
-
     //case4: a->work();
     else if (nextTokenKind == TokenKind::MemberPointerAccess) {
-        //当前curToken是a,需要通过a找爹
+        //通过a来找爹
         FuncCallInformation FC;
         FC.invokeClassName = findClassName(curToken.getTokenStr());
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat '->'
         FC.FuncName = curToken.getTokenStr();
-        //FuncCallInformation_umap[getClassCounter()] = FC;
-        if ((m_pCList->getFuncCallInfo().size()) == 0)
-            FC.callClassName = "Main";
+        string funcname = FC.FuncName;
+        Token nextTokens = m_tokenVector[m_offset + 1];
+        int parentoffset = 1;
+        if (m_tokenVector[m_offset + parentoffset].getTokenKind() == TokenKind::OpenParenthesis) {
+            // funcname = funcname +" ";
+            while (m_tokenVector[m_offset + parentoffset].getTokenKind() != TokenKind::CloseParenthesis) {
+                funcname = funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+                ++parentoffset;
+            }
+            funcname = funcname + " ";
+            funcname = funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+            FC.FuncName = funcname;
+        }
+        FC.callClassName = m_startClassName;
+        int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
+        int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
@@ -990,7 +1036,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
-        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp");
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int, int> tmpCurDescendantsSequenceMap;
@@ -1045,21 +1091,24 @@ std::shared_ptr<WhileAST>  Parser::ParseWhile() {
     cout << "Parsing while..." << endl;
     getNextToken(); //eat while
     if (curTokenKind != TokenKind::OpenParenthesis) { //while格式残缺，expected '('
-        LE.addnote("expcted '('", curToken.TL.m_tokenLine);
         return nullptr;
+    }
+    int conditionLenth = 1;
+    string loopCondition;
+    while (m_tokenVector[m_offset + conditionLenth].getTokenKind() != TokenKind::CloseParenthesis) {
+        loopCondition = loopCondition + m_tokenVector[m_offset + conditionLenth].getTokenStr();
+        ++conditionLenth;
     }
     getNextToken(); //eat '('
     auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
     auto cmp = ParseCmpOpRHS(LHS);
     getNextToken(); //eat ')'
-    if (curTokenKind != TokenKind::OpenBrace) { //while格式残缺，expected '{'
-        LE.addnote("expcted ')'", curToken.TL.m_tokenLine);
-        return nullptr;
-    }
-    getNextToken(); //eat '{'
     vector<shared_ptr<ExprAST>> exprs;
     LoopInformation LP;
+    LP.LoopCondition = loopCondition;
     int start = m_pCList->getFuncCallInfo().size();
+    getNextToken(); //eat '{'
+
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
@@ -1092,10 +1141,15 @@ void Parser::handInitial() {
     }
 }
 
+
 void Parser::handInclude() {
+    LogP.addnote("parsed Include...");
     getNextToken(); //eat include;
+    if (curTokenKind == TokenKind::LessThan); {
+        getNextToken();
+        getNextToken();
+    }
     getNextToken(); //eat "";
-    getNextToken();
 }
 
 void Parser::handlReturn() {

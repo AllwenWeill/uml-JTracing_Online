@@ -14,6 +14,10 @@
 #include <fstream>
 #include <unordered_set>
 #include <set>
+#include <map>
+#include <algorithm>
+#include <cstdlib>
+#include <windows.h>
 
 #ifdef __linux__
 #include <error.h>

@@ -1,8 +1,10 @@
 #include "ExprAST.h"
 class ElseAST : public ExprAST {
-	vector<shared_ptr<ExprAST>> m_exprs;
+    shared_ptr<ExprAST> m_cond;
+    vector<shared_ptr<ExprAST>> m_exprs;
 public:
-	ElseAST(vector<shared_ptr<ExprAST>> expr)
-		:m_exprs(expr) {}
-	~ElseAST() {}
+    ElseAST(shared_ptr<ExprAST> cond, vector<shared_ptr<ExprAST>> exprs)
+        :m_cond(cond),
+        m_exprs(exprs) {}
+    ~ElseAST() {}
 };

@@ -1,1 +1,8 @@
-altorder    altclassname            timeline        elsetimeline
+altorder    altclassname            timeline        elsetimeline     altCondition   elseCondintion
+1          MainClass,WorkerManager     5     -1   choice==0   -1   
+2          MainClass,WorkerManager     6     -1   choice==1   -1   
+3          MainClass,WorkerManager     7     -1   choice==3   -1   
+4          MainClass,WorkerManager     8     -1   choice==4   -1   
+5          MainClass,WorkerManager     9     -1   choice==5   -1   
+6          MainClass,WorkerManager     10     -1   choice==6   -1   
+7          MainClass,WorkerManager     11     -1   choice==7   -1   
