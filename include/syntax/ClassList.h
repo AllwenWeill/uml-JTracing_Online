@@ -31,6 +31,8 @@ struct LoopInformation{
 };
 class ClassList {
 private:
+    template<typename KeyType, typename ValueType>
+    map<KeyType, ValueType> convertUnorderedMapToMap(const unordered_map<KeyType, ValueType>& unorderedMap);
     std::ofstream umlFile;
     int m_classCounter;
     int m_altCounter;

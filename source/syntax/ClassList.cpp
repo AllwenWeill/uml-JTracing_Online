@@ -96,11 +96,12 @@ bool ClassList::writeUMLfile_FuncTable() {
         }
         ClassActivation_umap[startClassName][i]=newActivation;
     }
-    m_FuncTablePath = "/tmp/tmp.V41aZ2znkH/test/output/FuncTable4.txt";
+   map outputMap  = convertUnorderedMapToMap(FuncCallInformation_umap);
+    m_FuncTablePath = "/tmp/tmp.V41aZ2znkH/test/output/FuncTable5.txt";
     umlFile.open(m_FuncTablePath);
     umlFile << "functionorder	invokeClassName		Funcname	callClassName	Selfcall" << endl;
     int count = 0;
-    for(auto fc : FuncCallInformation_umap){
+    for(auto fc : outputMap){
         umlFile << fc.first << "      " << fc.second.invokeClassName << "     " << fc.second.FuncName << "      " << fc.second.callClassName << "        " << fc.second.selfCall << endl;
     }
     umlFile.close();
@@ -114,7 +115,8 @@ bool ClassList::writeUMLfile_LoopTable() {
     umlFile.open(m_LoopTablePath);
     umlFile << "looporder    loopclassname   		     timeline     Loopcondition" << endl;
     int count = 0;
-    for (auto lc : Loop_umap) {
+    map outputMap  = convertUnorderedMapToMap( Loop_umap);
+    for (auto lc : outputMap) {
         umlFile << ++count << "          ";
         for (int i =0;i<lc.second.loopIcludeClassName.size();i++)
         umlFile<<lc.second.loopIcludeClassName[i]<<",";
@@ -132,11 +134,12 @@ bool ClassList::writeUMLfile_LoopTable() {
 }
 
 bool ClassList::writeUMLfile_AltTable() {
-    m_AltTablePath = "/tmp/tmp.V41aZ2znkH/test/output/AltTable.txt";
+    m_AltTablePath = "/tmp/tmp.V41aZ2znkH/test/output/AltTable2.txt";
     umlFile.open(m_AltTablePath);
     umlFile << "altorder    altclassname            timeline        elsetimeline     altCondition   elseCondintion" << endl;
     int count = 0;
-    for (auto at : Alt_umap) {
+    map outputMap  = convertUnorderedMapToMap( Alt_umap);
+    for (auto at :outputMap) {
         umlFile << at.first << "          ";
         if(at.second.altIncludeClassName.size() == 0)
             umlFile<<"-1";
@@ -187,6 +190,13 @@ bool ClassList::writeUMLfile_ActivationTable() {
     return true;
 }
 
+
+template<typename KeyType, typename ValueType>
+map<KeyType, ValueType> ClassList::convertUnorderedMapToMap(const std::unordered_map<KeyType, ValueType>& unorderedMap) {
+    map<KeyType, ValueType> map(unorderedMap.begin(), unorderedMap.end());
+    return map;
+}
+
 ClassList::~ClassList() {
     cout << "Complete the build ClassList!" << endl;
     if (writeUMLfile_FuncTable())
@@ -206,3 +216,7 @@ ClassList::~ClassList() {
     else
         std::cout << "build <ActivationTable.txt> failed!" << std::endl;
 }
+
+
+
+
