@@ -1,0 +1,7 @@
+functionorder	invokeClassName		Funcname	callClassName	Selfcall
+6      Actor     getActorNum      main        0
+5      Chef     getChefName              0
+1      Actor     getActorNum      main        0
+3      Chef     cooking              0
+4      Test     buyFood      main        0
+2                         0

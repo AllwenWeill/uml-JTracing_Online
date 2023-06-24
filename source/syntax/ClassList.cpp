@@ -118,13 +118,17 @@ bool ClassList::writeUMLfile_LoopTable() {
     map outputMap  = convertUnorderedMapToMap( Loop_umap);
     for (auto lc : outputMap) {
         umlFile << ++count << "          ";
-        for (int i =0;i<lc.second.loopIcludeClassName.size();i++)
-        umlFile<<lc.second.loopIcludeClassName[i]<<",";
+        for (int i =0;i<lc.second.loopIcludeClassName.size()-1;i++){
+            umlFile<<lc.second.loopIcludeClassName[i]<<",";
+        }
+        umlFile<<lc.second.loopIcludeClassName[lc.second.loopIcludeClassName.size()-1];
         umlFile<<"     ";
-        for (int i =0;i<lc.second.timeLine.size();i++)
+        for (int i =0;i<lc.second.timeLine.size()-1;i++){
             umlFile<<lc.second.timeLine[i]<<",";
+        }
+        umlFile<<lc.second.timeLine[lc.second.timeLine.size()-1];
         umlFile <<"   ";
-        umlFile<<lc.second.LoopCondition<<",";
+        umlFile<<lc.second.LoopCondition;
         umlFile <<"   "<<endl;
     }
     umlFile.close();
@@ -143,25 +147,42 @@ bool ClassList::writeUMLfile_AltTable() {
         umlFile << at.first << "          ";
         if(at.second.altIncludeClassName.size() == 0)
             umlFile<<"-1";
-        for (int i =0;i<at.second.altIncludeClassName.size();i++)
-            umlFile<<at.second.altIncludeClassName[i]<<",";
+        else{
+            for (int i =0;i<at.second.altIncludeClassName.size()-1;i++){
+                umlFile<<at.second.altIncludeClassName[i]<<",";
+            }
+            umlFile<<at.second.altIncludeClassName[at.second.altIncludeClassName.size()-1];
+        }
         umlFile<<"     ";
         if(at.second.timeLine.size() == 0)
             umlFile<<"-1";
-        for (int i =0;i<at.second.timeLine.size();i++)
-            umlFile<<at.second.timeLine[i]<<",";
+        else{
+            for (int i =0;i<at.second.timeLine.size()-1;i++){
+                umlFile<<at.second.timeLine[i]<<",";
+            }
+            umlFile<<at.second.timeLine[at.second.timeLine.size()-1];
+        }
         umlFile<<"     ";
         if(at.second.elseTimeLine.size() == 0)
             umlFile<<"-1";
-        for (int i =0;i<at.second.elseTimeLine.size();i++)
-        umlFile<<at.second.elseTimeLine[i]<<",";
+        else{
+            for (int i =0;i<at.second.elseTimeLine.size()-1;i++){
+                umlFile<<at.second.elseTimeLine[i]<<",";
+            }
+            umlFile<<at.second.elseTimeLine[at.second.elseTimeLine.size()-1];
+        }
+
         umlFile <<"   ";
-        umlFile<<at.second.altCondition<<",";
+        umlFile<<at.second.altCondition;
         umlFile <<"   ";
         if(at.second.elseCondition.size() == 0)
             umlFile<<"-1";
-        for (int i =0;i<at.second.elseCondition.size();i++)
-            umlFile<<at.second.elseCondition[i]<<",";
+        else{
+            for (int i =0;i<at.second.elseCondition.size()-1;i++){
+                umlFile<<at.second.elseCondition[i]<<",";
+            }
+            umlFile<<at.second.elseCondition[at.second.elseCondition.size()-1];
+        }
         umlFile <<"   "<<endl;
     }
 
@@ -178,9 +199,15 @@ bool ClassList::writeUMLfile_ActivationTable() {
 
     for(auto fc : ClassActivation_umap){
         umlFile << fc.first << "   "  ;
+        int count =1;
         for(auto fe:ClassActivation_umap.at(fc.first)){
-            umlFile << fe.first<<"."<<  fe.second;
-            umlFile<<", ";
+            if(count<ClassActivation_umap.at(fc.first).size()){
+                umlFile << fe.first<<"."<<  fe.second;
+                umlFile<<", ";
+                count++;
+            }
+            else
+                umlFile << fe.first<<"."<<  fe.second;
         }
         umlFile<< "     "<<endl;
     }

@@ -842,6 +842,16 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         FC.invokeClassName = m_curFileName.substr(0, m_curFileName.size()-4);
         FC.callClassName =m_startClassName;
         FC.FuncName = curToken.getTokenStr();
+        string funcname =FC.FuncName;
+        int parentoffset =1;
+        if (m_tokenVector[m_offset + parentoffset].getTokenKind()==TokenKind::OpenParenthesis){
+            while (m_tokenVector[m_offset + parentoffset].getTokenKind()!=TokenKind::CloseParenthesis){
+                 funcname =funcname+ m_tokenVector[m_offset + parentoffset].getTokenStr();
+                ++parentoffset;
+            }
+            funcname= funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+            FC.FuncName =funcname;
+        }
         cout << "parseing internal function..." << endl;
         cout << "---->" << FC.FuncName << "()" << endl;
         m_pCList->addFuncCallInfo(FC);
@@ -923,10 +933,19 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat Dot;
         FC.FuncName = curToken.getTokenStr();
+        string funcname =FC.FuncName;
+        int parentoffset =1;
+        if (m_tokenVector[m_offset + parentoffset].getTokenKind()==TokenKind::OpenParenthesis){
+            while (m_tokenVector[m_offset + parentoffset].getTokenKind()!=TokenKind::CloseParenthesis){
+                 funcname =funcname+ m_tokenVector[m_offset + parentoffset].getTokenStr();
+                ++parentoffset;
+            }
+            funcname= funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+            FC.FuncName =funcname;
+        }
         FC.callClassName =m_startClassName;
-        int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
-        int curFuncCallOrder22 = (m_pCList->getFuncCallInfo()).size();
+
         while (curTokenKind != TokenKind::Semicolon) {
             getNextToken();
         }
@@ -983,6 +1002,18 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         getNextToken(); //eat Indentifier,like 'a'
         getNextToken(); //eat '->'
         FC.FuncName = curToken.getTokenStr();
+        string funcname =FC.FuncName;
+        Token nextTokens = m_tokenVector[m_offset + 1];
+        int parentoffset =1;
+        if (m_tokenVector[m_offset + parentoffset].getTokenKind()==TokenKind::OpenParenthesis){
+            // funcname = funcname +" ";
+            while (m_tokenVector[m_offset + parentoffset].getTokenKind()!=TokenKind::CloseParenthesis){
+                 funcname =funcname+ m_tokenVector[m_offset + parentoffset].getTokenStr();
+                ++parentoffset;
+            }
+            funcname= funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
+            FC.FuncName =funcname;
+        }
         FC.callClassName =m_startClassName;
         int curFuncCallOrder21 = (m_pCList->getFuncCallInfo()).size();
         m_pCList->addFuncCallInfo(FC);
