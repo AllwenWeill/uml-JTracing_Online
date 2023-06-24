@@ -43,10 +43,12 @@ unordered_map<int, FuncCallInformation> ClassList::getFuncCallInfo() {
 unordered_map<string, unordered_map<int,int>> ClassList::getActivationInfo() {
     return ClassActivation_umap;
 }
-void ClassList::modifyAltInfo(AltInformation AT,int elsePosition){
+void ClassList::modifyAltInfo(AltInformation AT,int elsePosition,string elseCondition){
     for(int i =0; i<AT.altIncludeClassName.size();i++)
     Alt_umap[Alt_umap.size()].altIncludeClassName.push_back(AT.altIncludeClassName[i]);
     Alt_umap[Alt_umap.size()].elseTimeLine.push_back(elsePosition);
+    if (elseCondition !="NULLCONDITION")
+    Alt_umap[Alt_umap.size()].elseCondition.push_back(elseCondition);
 }
 unordered_map<int, LoopInformation> ClassList::getLoopInfo() {
 	return Loop_umap;
@@ -80,7 +82,20 @@ void ClassList::outputUmap(unordered_map<T, T> umap) {
 }
 
 bool ClassList::writeUMLfile_FuncTable() {
-
+    string startClassName = FuncCallInformation_umap.begin()->second.callClassName;
+    startClassName = FuncCallInformation_umap.begin()->second.callClassName;
+    for(int i = 1; i<=FuncCallInformation_umap.size();i++){
+        if(FuncCallInformation_umap.at(i).invokeClassName == FuncCallInformation_umap.at(i).callClassName){
+            FuncCallInformation_umap[i].selfCall=1;
+        }
+        int newActivation =1;
+        if  (ClassActivation_umap.count(startClassName)>0){
+            if (ClassActivation_umap.at(startClassName).count(i)>0){
+                newActivation = ClassActivation_umap.at(startClassName).at(i)+1;
+            }
+        }
+        ClassActivation_umap[startClassName][i]=newActivation;
+    }
     m_FuncTablePath = "/tmp/tmp.V41aZ2znkH/test/output/FuncTable4.txt";
     umlFile.open(m_FuncTablePath);
     umlFile << "functionorder	invokeClassName		Funcname	callClassName	Selfcall" << endl;
@@ -97,7 +112,7 @@ bool ClassList::writeUMLfile_FuncTable() {
 bool ClassList::writeUMLfile_LoopTable() {
     m_LoopTablePath = "/tmp/tmp.V41aZ2znkH/test/output/LoopTable.txt";
     umlFile.open(m_LoopTablePath);
-    umlFile << "looporder    loopclassname   		     timeline" << endl;
+    umlFile << "looporder    loopclassname   		     timeline     Loopcondition" << endl;
     int count = 0;
     for (auto lc : Loop_umap) {
         umlFile << ++count << "          ";
@@ -106,10 +121,10 @@ bool ClassList::writeUMLfile_LoopTable() {
         umlFile<<"     ";
         for (int i =0;i<lc.second.timeLine.size();i++)
             umlFile<<lc.second.timeLine[i]<<",";
+        umlFile <<"   ";
+        umlFile<<lc.second.LoopCondition<<",";
         umlFile <<"   "<<endl;
     }
-
-
     umlFile.close();
     if (!fs::exists(m_LoopTablePath))
         return false;
@@ -119,18 +134,31 @@ bool ClassList::writeUMLfile_LoopTable() {
 bool ClassList::writeUMLfile_AltTable() {
     m_AltTablePath = "/tmp/tmp.V41aZ2znkH/test/output/AltTable.txt";
     umlFile.open(m_AltTablePath);
-    umlFile << "altorder    altclassname            timeline        elsetimeline" << endl;
+    umlFile << "altorder    altclassname            timeline        elsetimeline     altCondition   elseCondintion" << endl;
     int count = 0;
     for (auto at : Alt_umap) {
         umlFile << at.first << "          ";
+        if(at.second.altIncludeClassName.size() == 0)
+            umlFile<<"-1";
         for (int i =0;i<at.second.altIncludeClassName.size();i++)
             umlFile<<at.second.altIncludeClassName[i]<<",";
         umlFile<<"     ";
+        if(at.second.timeLine.size() == 0)
+            umlFile<<"-1";
         for (int i =0;i<at.second.timeLine.size();i++)
             umlFile<<at.second.timeLine[i]<<",";
         umlFile<<"     ";
+        if(at.second.elseTimeLine.size() == 0)
+            umlFile<<"-1";
         for (int i =0;i<at.second.elseTimeLine.size();i++)
         umlFile<<at.second.elseTimeLine[i]<<",";
+        umlFile <<"   ";
+        umlFile<<at.second.altCondition<<",";
+        umlFile <<"   ";
+        if(at.second.elseCondition.size() == 0)
+            umlFile<<"-1";
+        for (int i =0;i<at.second.elseCondition.size();i++)
+            umlFile<<at.second.elseCondition[i]<<",";
         umlFile <<"   "<<endl;
     }
 
@@ -161,17 +189,6 @@ bool ClassList::writeUMLfile_ActivationTable() {
 
 ClassList::~ClassList() {
     cout << "Complete the build ClassList!" << endl;
-    string startClassName = FuncCallInformation_umap.begin()->second.callClassName;
-     startClassName = FuncCallInformation_umap.begin()->second.callClassName;
-    for(int i = 1; i<=FuncCallInformation_umap.size();i++){
-        int newActivation =1;
-        if  (ClassActivation_umap.count(startClassName)>0){
-            if (ClassActivation_umap.at(startClassName).count(i)>0){
-                newActivation = ClassActivation_umap.at(startClassName).at(i)+1;
-            }
-        }
-        ClassActivation_umap[startClassName][i]=newActivation;
-    }
     if (writeUMLfile_FuncTable())
         std::cout << "build <FuncTable.txt> success!" << std::endl;
     else

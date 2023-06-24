@@ -372,6 +372,7 @@ std::shared_ptr<Always_combAST> Parser::ParseAlways_comb() {
 
 std::shared_ptr<ForAST> Parser::ParseFor() {
     getNextToken(); //eat for�ؼ���
+    LoopInformation LP;
     if (curTokenKind != TokenKind::OpenParenthesis) { //��ʱ�ڴ�һ��(
         LE.addnote("expected '('", curToken.TL.m_tokenLine);
         return nullptr;
@@ -387,6 +388,7 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
     if (curTokenKind != TokenKind::Semicolon) {
         LE.addnote("expected ';'", curToken.TL.m_tokenLine);
     }
+    LP.LoopCondition =  m_tokenVector[m_offset-1].getTokenStr();
     getNextToken(); //eat ;
     auto step = ParseExpression();
     if (curTokenKind != TokenKind::CloseParenthesis) {
@@ -400,7 +402,7 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
     }
     getNextToken(); //eat '{'
     vector<shared_ptr<ExprAST>> exprs;
-    LoopInformation LP;
+
     int start =m_pCList->getFuncCallInfo().size();
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
@@ -460,12 +462,14 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
     }
     vector<shared_ptr<ExprAST>> exprs;
     auto cond = ParseParenExpr();
+    AltInformation AT;
+    AT.altCondition = m_tokenVector[m_offset-2].getTokenStr();
+    int start =m_pCList->getFuncCallInfo().size();
     if (curTokenKind != TokenKind::OpenBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
     }
-    AltInformation AT;
-    int start =m_pCList->getFuncCallInfo().size();
+
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
@@ -487,9 +491,23 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
 std::shared_ptr<ExprAST> Parser::ParseElse() {
     LogP.addnote("->parsing else...");
     getNextToken(); //eat else
-    vector<shared_ptr<ExprAST>> exprs;
+    shared_ptr<ExprAST> cond = nullptr;
     AltInformation AT;
+    string elseCondition ="NULLCONDITION";
+    if(curTokenKind == TokenKind:: IfKeyword){
+        if (curTokenKind != TokenKind::OpenParenthesis) {
+            LE.addnote("expected expression", curToken.TL.m_tokenLine);
+            return nullptr;
+        }
+         cond = ParseParenExpr();
+        elseCondition = m_tokenVector[m_offset-2].getTokenStr();
+    }
+    vector<shared_ptr<ExprAST>> exprs;
     int start =m_pCList->getFuncCallInfo().size();
+    if (curTokenKind != TokenKind::OpenBrace) {
+        auto expr = ParseExpression();
+        exprs.push_back(expr);
+    }
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);
@@ -503,8 +521,8 @@ std::shared_ptr<ExprAST> Parser::ParseElse() {
         AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i+1).invokeClassName);
     }
     int elseStartPosition =start+1;
-    m_pCList->modifyAltInfo(AT,elseStartPosition);
-    return std::move(std::make_shared<ElseAST>(exprs));
+    m_pCList->modifyAltInfo(AT,elseStartPosition,elseCondition);
+    return std::move(std::make_shared<ElseAST>(cond,exprs));
 }
 
 std::shared_ptr<ExprAST> Parser::ParseParenExpr() { //����������for()
@@ -1039,13 +1057,12 @@ std::shared_ptr<WhileAST>  Parser::ParseWhile() {
     auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
     auto cmp = ParseCmpOpRHS(LHS);
     getNextToken(); //eat ')'
-    if (curTokenKind != TokenKind::OpenBrace) { //while��ʽ��ȱ��expected '{'
-        return nullptr;
-    }
-    getNextToken(); //eat '{'
     vector<shared_ptr<ExprAST>> exprs;
     LoopInformation LP;
+    LP.LoopCondition =  m_tokenVector[m_offset-1].getTokenStr();
     int start =m_pCList->getFuncCallInfo().size();
+    getNextToken(); //eat '{'
+
     while (curTokenKind != TokenKind::CloseBrace) {
         auto expr = ParseExpression();
         exprs.push_back(expr);

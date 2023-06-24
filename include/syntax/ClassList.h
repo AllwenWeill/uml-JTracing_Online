@@ -20,10 +20,13 @@ struct AltInformation{
     vector<string> altIncludeClassName;
     vector<int> timeLine;
     vector<int> elseTimeLine;
+    string  altCondition;
+    vector<string>elseCondition;
 };
 struct LoopInformation{
     vector<string> loopIcludeClassName;
     vector<int> timeLine;
+    string LoopCondition;
     vector<int>elseTimeline;
 };
 class ClassList {
@@ -57,7 +60,7 @@ public:
     void outputVector(vector<T> vec);
     template<typename T>
     void outputUmap(unordered_map<T, T> umap);
-    void modifyAltInfo(AltInformation ,int);
+    void modifyAltInfo(AltInformation AT,int elsePosition,string elseCondition);
     void modifyClassActivationInfo(string className,int key,int value);
     bool writeUMLfile_FuncTable();
     bool writeUMLfile_LoopTable();
