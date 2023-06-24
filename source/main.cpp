@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
     cout << "----------------------------------------------------" << endl;
     ClassList CList;
     ClassList* pCList = &CList;
-    Parser par(hTokenFlows, cppTokenFlows, cppTokenFlows["main.cpp"], classNames, pCList, "main.cpp","main");
+    Parser par(hTokenFlows, cppTokenFlows, cppTokenFlows["main.cpp"], classNames, pCList, "main.cpp","MainClass");
     //SourceManager SM(text);
     /*string* psm = &SM.fd.filememo;
     Lexer lex(psm, SM.fd.filesize);

@@ -148,6 +148,7 @@ bool ClassList::writeUMLfile_AltTable() {
         if(at.second.altIncludeClassName.size() == 0)
             umlFile<<"-1";
         else{
+            vector<string> includeClass (at.second.altIncludeClassName);
             for (int i =0;i<at.second.altIncludeClassName.size()-1;i++){
                 umlFile<<at.second.altIncludeClassName[i]<<",";
             }
@@ -203,7 +204,7 @@ bool ClassList::writeUMLfile_ActivationTable() {
         for(auto fe:ClassActivation_umap.at(fc.first)){
             if(count<ClassActivation_umap.at(fc.first).size()){
                 umlFile << fe.first<<"."<<  fe.second;
-                umlFile<<", ";
+                umlFile<<",";
                 count++;
             }
             else

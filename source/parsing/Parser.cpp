@@ -383,12 +383,18 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
         LE.addnote("expected ';'", curToken.TL.m_tokenLine);
     }
     getNextToken(); //eat ;
+    int conditionLenth =0;
+    string loopCondition;
+    while(m_tokenVector[m_offset+conditionLenth].getTokenKind()!=TokenKind::Semicolon){
+        loopCondition =loopCondition+m_tokenVector[m_offset+conditionLenth].getTokenStr();
+        ++conditionLenth;
+    }
     auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
     auto cmp = ParseCmpOpRHS(LHS);
     if (curTokenKind != TokenKind::Semicolon) {
         LE.addnote("expected ';'", curToken.TL.m_tokenLine);
     }
-    LP.LoopCondition =  m_tokenVector[m_offset-1].getTokenStr();
+    LP.LoopCondition =  loopCondition;
     getNextToken(); //eat ;
     auto step = ParseExpression();
     if (curTokenKind != TokenKind::CloseParenthesis) {
@@ -461,9 +467,15 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
         return nullptr;
     }
     vector<shared_ptr<ExprAST>> exprs;
+    int conditionLenth =1;
+    string altCondition;
+    while(m_tokenVector[m_offset+conditionLenth].getTokenKind()!=TokenKind::CloseParenthesis){
+        altCondition =altCondition+m_tokenVector[m_offset+conditionLenth].getTokenStr();
+        ++conditionLenth;
+    }
     auto cond = ParseParenExpr();
     AltInformation AT;
-    AT.altCondition = m_tokenVector[m_offset-2].getTokenStr();
+    AT.altCondition = altCondition;
     int start =m_pCList->getFuncCallInfo().size();
     if (curTokenKind != TokenKind::OpenBrace) {
         auto expr = ParseExpression();
@@ -495,12 +507,17 @@ std::shared_ptr<ExprAST> Parser::ParseElse() {
     AltInformation AT;
     string elseCondition ="NULLCONDITION";
     if(curTokenKind == TokenKind:: IfKeyword){
+        elseCondition.clear();
         if (curTokenKind != TokenKind::OpenParenthesis) {
             LE.addnote("expected expression", curToken.TL.m_tokenLine);
             return nullptr;
         }
-         cond = ParseParenExpr();
-        elseCondition = m_tokenVector[m_offset-2].getTokenStr();
+        int conditionLenth =1;
+        while(m_tokenVector[m_offset+conditionLenth].getTokenKind()!=TokenKind::CloseParenthesis){
+            elseCondition =elseCondition+m_tokenVector[m_offset+conditionLenth].getTokenStr();
+            ++conditionLenth;
+        }
+        auto cond = ParseParenExpr();
     }
     vector<shared_ptr<ExprAST>> exprs;
     int start =m_pCList->getFuncCallInfo().size();
@@ -1087,13 +1104,19 @@ std::shared_ptr<WhileAST>  Parser::ParseWhile() {
     if (curTokenKind != TokenKind::OpenParenthesis) { //while��ʽ��ȱ��expected '('
         return nullptr;
     }
+    int conditionLenth =1;
+    string loopCondition;
+    while(m_tokenVector[m_offset+conditionLenth].getTokenKind()!=TokenKind::CloseParenthesis){
+        loopCondition =loopCondition+m_tokenVector[m_offset+conditionLenth].getTokenStr();
+        ++conditionLenth;
+    }
     getNextToken(); //eat '('
     auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
     auto cmp = ParseCmpOpRHS(LHS);
     getNextToken(); //eat ')'
     vector<shared_ptr<ExprAST>> exprs;
     LoopInformation LP;
-    LP.LoopCondition =  m_tokenVector[m_offset-1].getTokenStr();
+    LP.LoopCondition =  loopCondition;
     int start =m_pCList->getFuncCallInfo().size();
     getNextToken(); //eat '{'
 
