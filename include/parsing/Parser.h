@@ -12,7 +12,7 @@ struct VariableInformation {
 };
 class Parser {
 public:
-    Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList *pCList, string curFileName);
+    Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName, string startClassName);
     ~Parser();
     LogError LE;
     LogParser LogP;
@@ -21,10 +21,12 @@ public:
     unordered_map<string, VariableInformation> VariableInfo_umap; //变量存储表
     unordered_set<TokenKind> Type_uset; //变量类型表
 private:
+    string m_startClassName;
     string m_curFileName; 
     unordered_map<string, vector<Token>> m_hTokenFlows;
     unordered_map<string, vector<Token>> m_cppTokenFlows;
     ClassList* m_pCList;
+    vector<int>testvec;
     VariableInformation VF; //该VF结构体需要不断被更新，生存周期直到Parser销毁
     unsigned long int m_offset;
     vector<string> m_classNames;
