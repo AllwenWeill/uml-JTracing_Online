@@ -2,7 +2,7 @@
 namespace fs = std::filesystem;
 SourceManager::SourceManager(fs::path& filepath) :
         m_filepath(filepath),
-        m_fileInputDirPath("/tmp/tmp.V41aZ2znkH/test/input4")
+        m_fileInputDirPath("/tmp/tmp.V41aZ2znkH/test/input5")
 {
     scanFileDir();
 }
@@ -49,7 +49,7 @@ bool SourceManager::scanFileDir() {
 void SourceManager::filterFileName(string filename) {
     //检测后缀三个字符是否为".h"
     if (filename.substr(filename.size() - 2, filename.size() - 1) == ".h") { //添加.h文本内容
-        string str_filepath = "/tmp/tmp.V41aZ2znkH/test/input4/" + filename;
+        string str_filepath = "/tmp/tmp.V41aZ2znkH/test/input5/" + filename;
         fs::path filepath(str_filepath);
         m_hfiles[filename] = readNormalSource(filepath); //读取文本
         /*
@@ -60,7 +60,7 @@ void SourceManager::filterFileName(string filename) {
         }*/
     }
     else if (filename.substr(filename.size() - 4, filename.size() - 1) == ".cpp") { //添加.cpp文本内容
-        string str_filepath = "/tmp/tmp.V41aZ2znkH/test/input4/" + filename;
+        string str_filepath = "/tmp/tmp.V41aZ2znkH/test/input5/" + filename;
         fs::path filepath(str_filepath);
         m_cppfiles[filename] = readNormalSource(filepath); //读取文本
     }

@@ -9,11 +9,10 @@ using  namespace std;
 
 int main()
 {
-	////���Դ��룺
-	Employee* employee = new Employee(1, "ZhangSan", 1);
+	Employee * employee = new Employee(1, "ZhangSan", 1);
 	employee->showInfo();
 
-	Manager* manager = new Manager(2, "LiSi", 2);
+	Manager* manager = new Manager();
     manager->showInfo();
 
 	Boss* boss = new Boss(3, "Bruce", 0);

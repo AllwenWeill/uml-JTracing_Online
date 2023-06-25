@@ -1,24 +1,28 @@
 #include "manager.h"
 
-//构造函数
-Manager::Manager(int id, string name, int dId)
+//锟斤拷锟届函锟斤拷
+manager::manager(int id, string name, int dId)
 {
 	m_Id = id;
 	m_Name = name;
 	m_DeptId = dId;
 }
 
-//显示个人信息
-void Manager::showInfo()
+//锟斤拷示锟斤拷锟斤拷锟斤拷息
+void manager::showInfo()
 {
-	cout << "worker ID: " << m_Id;
+    Boss* boss = new Boss();
+    boss->showInfo();
+
+    cout << "worker ID: " << m_Id;
 	cout << "worker name: " << m_Name;
 	cout << "worker job:" << getDeptName();
 	cout << "worker position: Complete the tasks assigned by the LaoWang and issue tasks to employees." << endl;
+
 }
 
-//获取岗位名称
-string Manager::getDeptName()
+//锟斤拷取锟斤拷位锟斤拷锟斤拷
+string manager::getDeptName()
 {
 	return  string("manager");
 }

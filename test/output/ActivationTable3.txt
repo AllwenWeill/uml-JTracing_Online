@@ -1,6 +1,6 @@
 classname  activiationtime
-MainClass   11.1, 4.1, 3.1, 2.1, 1.1, 5.1, 6.1, 7.1, 8.1, 9.1, 10.1     
+MainClass   11.1,4.1,3.1,2.1,1.1,5.1,6.1,7.1,8.1,9.1,10.1     
 Employee   1.1     
 Manager   2.1     
 Boss   3.1     
-WorkerManager   11.1, 10.1, 9.1, 8.1, 4.1, 5.1, 6.1, 7.1     
+WorkerManager   11.1,10.1,9.1,8.1,4.1,5.1,6.1,7.1     

@@ -1,51 +1,8 @@
 #include "workerManager.h"
 
-WorkerManager::WorkerManager()
-{
 
-	//1¡¢ÎÄ¼ş²»´æÔÚ
 
-	ifstream ifs;
-	ifs.open(FILENAME); // ¶ÁÎÄ¼ş
-
-	if (!ifs.is_open())
-	{
-		cout << "Cannot find file!" << endl;
-		//³õÊ¼»¯ÊôĞÔ
-		//³õÊ¼»¯¼ÇÂ¼ÈËÊı
-		m_EmpNum = 0;
-		//³õÊ¼»¯ÎÄ¼şÊÇ·ñÎª¿Õ
-		m_FileIsEmpty = 1;
-		ifs.close();
-		return;
-	}
-
-	//2¡¢ÎÄ¼ş´æÔÚ Êı¾İÎª¿Õ
-	char ch;
-	ifs >> ch;
-	if (ifs.eof())
-	{
-		//ÎÄ¼şÎª¿Õ
-		cout << "File empty!" << endl;
-		//³õÊ¼»¯¼ÇÂ¼ÈËÊı
-		m_EmpNum = 0;
-		//³õÊ¼»¯ÎÄ¼şÊÇ·ñÎª¿Õ
-		m_FileIsEmpty = 1;
-		ifs.close();
-		return;
-	}
-
-	//3¡¢ÎÄ¼ş´æÔÚ£¬²¢ÇÒ¼ÇÂ¼Êı¾İ
-	int num = get_EmpNum();
-	cout << "Staff number: " << num << endl;
-	m_EmpNum = num;
-	
-	//½«ÎÄ¼şÖĞµÄÊı¾İ £¬´æµ½Êı×éÖĞ
-	init_Emp();
-
-}
-
-//Õ¹Ê¾²Ëµ¥
+//Õ¹Ê¾ï¿½Ëµï¿½
 void WorkerManager::Show_Menu()
 {
 	cout << "********************************************" << endl;
@@ -61,33 +18,34 @@ void WorkerManager::Show_Menu()
 	cout << "********************************************" << endl;
 }
 
-//ÍË³öÏµÍ³
+//ï¿½Ë³ï¿½ÏµÍ³
 void WorkerManager::ExitSystem()
 {
+
 	cout << "Welcome next use" << endl;
 }
 
-//Ìí¼ÓÖ°¹¤
+//ï¿½ï¿½ï¿½Ö°ï¿½ï¿½
 void WorkerManager::Add_Emp()
 {
 	cout << "Please enter the number of added employees: " << endl;
 
-	int addNum = 0; //±£´æÓÃ»§µÄÊäÈëÊıÁ¿
+	int addNum = 0; //ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	cin >> addNum;
 
 	if (addNum > 0)
 	{
-		//Ìí¼Ó
-		//¼ÆËãÌí¼ÓĞÂ¿Õ¼ä´óĞ¡
-		int newSize = m_EmpNum + addNum; // ĞÂ¿Õ¼äÈËÊı = Ô­À´¼ÇÂ¼ÈËÊı + ĞÂÔöÈËÊı
+		//ï¿½ï¿½ï¿½
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¿Õ¼ï¿½ï¿½Ğ¡
+		int newSize = m_EmpNum + addNum; // ï¿½Â¿Õ¼ï¿½ï¿½ï¿½ï¿½ï¿½ = Ô­ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	
 
-		//ÅúÁ¿Ìí¼ÓĞÂÊı¾İ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		for (int i = 0; i < addNum; i++)
 		{
-			int id; //Ö°¹¤±àºÅ
-			string name; //Ö°¹¤ĞÕÃû
-			int dSelect; // ²¿ÃÅÑ¡Ôñ
+			int id; //Ö°ï¿½ï¿½ï¿½ï¿½ï¿½
+			string name; //Ö°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			int dSelect; // ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½
 
 			cout << "Please input the " << i + 1 << " new worker ID " << endl;
 			cin >> id;
@@ -112,16 +70,16 @@ void WorkerManager::Add_Emp()
 			}
 		}
 
-		//¸üĞÂĞÂµÄÖ°¹¤ÈËÊı
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½Ö°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		m_EmpNum = newSize;
 
-		//¸üĞÂÖ°¹¤²»Îª¿Õ±êÖ¾
+		//ï¿½ï¿½ï¿½ï¿½Ö°ï¿½ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ö¾
 		m_FileIsEmpty = 0;
 
-		//ÌáÊ¾Ìí¼Ó³É¹¦
+		//ï¿½ï¿½Ê¾ï¿½ï¿½Ó³É¹ï¿½
 		cout << "Success to add " << addNum << " new worker!" << endl;
 
-		//±£´æÊı¾İµ½ÎÄ¼şÖĞ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
 		save();
 
 	}
@@ -131,10 +89,10 @@ void WorkerManager::Add_Emp()
 	}
 }
 
-//±£´æÎÄ¼ş
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
 void WorkerManager::save()
 {
-	//½«Ã¿¸öÈËÊı¾İÊä³öµ½ÆÁÄ»
+	//ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»
 	for (int i = 0; i < this->m_EmpNum; i++)
 	{
 		cout << m_Id << endl;
@@ -144,35 +102,35 @@ void WorkerManager::save()
 }
 
 
-//Í³¼ÆÎÄ¼şÖĞÈËÊı
+//Í³ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 int WorkerManager::get_EmpNum()
 {
 
-	return m_EmpNum;
+	save();
 
 }
 
-//³õÊ¼»¯Ô±¹¤
+//ï¿½ï¿½Ê¼ï¿½ï¿½Ô±ï¿½ï¿½
 void WorkerManager::init_Emp()
 {
 	m_EmpNum = 0;
 }
 
 
-//É¾³ıÖ°¹¤
+//É¾ï¿½ï¿½Ö°ï¿½ï¿½
 void WorkerManager::Del_Emp()
 {
-	//°´ÕÕÖ°¹¤±àºÅÉ¾³ı
+	//ï¿½ï¿½ï¿½ï¿½Ö°ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½
 	cout << "Please enter the employee number you want to delete:" << endl;
 	int id = 0;
 	cin >> id;
 
 	int index = IsExist(id);
 
-	if (index != -1) //ËµÃ÷Ö°¹¤´æÔÚ£¬²¢ÇÒÒªÉ¾³ıµôindexÎ»ÖÃÉÏµÄÖ°¹¤
+	if (index != -1) //Ëµï¿½ï¿½Ö°ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÉ¾ï¿½ï¿½ï¿½ï¿½indexÎ»ï¿½ï¿½ï¿½Ïµï¿½Ö°ï¿½ï¿½
 	{
-			m_EmpNum--; //¸üĞÂÊı×éÖĞ¼ÇÂ¼ÈËÔ±¸öÊı
-			//Êı¾İÍ¬²½¸üĞÂµ½ÎÄ¼şÖĞ
+			m_EmpNum--; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¼ï¿½Â¼ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½
+			//ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
 			save();
 
 			cout << "Successfully delete!" << endl;
@@ -180,7 +138,7 @@ void WorkerManager::Del_Emp()
 
 }
 
-//ÅĞ¶ÏÖ°¹¤ÊÇ·ñ´æÔÚ  Èç¹û´æÔÚ·µ»ØÖ°¹¤ËùÔÚÊı×éÖĞµÄÎ»ÖÃ£¬²»´æÔÚ·µ»Ø-1
+//ï¿½Ğ¶ï¿½Ö°ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ï¿½ï¿½Ö°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğµï¿½Î»ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ï¿½ï¿½-1
 int WorkerManager::IsExist(int id)
 {
 	int index = -1;
@@ -189,7 +147,7 @@ int WorkerManager::IsExist(int id)
 	{
 		if (m_Id == id)
 		{
-			//ÕÒµ½Ö°¹¤
+			//ï¿½Òµï¿½Ö°ï¿½ï¿½
 			index = i;
 
 			break;
@@ -199,17 +157,17 @@ int WorkerManager::IsExist(int id)
 	return index;
 }
 
-//ĞŞ¸ÄÖ°¹¤
+//ï¿½Ş¸ï¿½Ö°ï¿½ï¿½
 void WorkerManager::Mod_Emp()
 {
-	cout << "ÇëÊäÈëĞŞ¸ÄÖ°¹¤µÄ±àºÅ£º" << endl;
+	cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ş¸ï¿½Ö°ï¿½ï¿½ï¿½Ä±ï¿½Å£ï¿½" << endl;
 	int id;
 	cin >> id;
 
 	int ret = IsExist(id);
 	if (ret != -1)
 	{ 
-		//²éÕÒµ½±àºÅµÄÖ°¹¤
+		//ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½Åµï¿½Ö°ï¿½ï¿½
 			
 		int newId = 0;
 		
@@ -239,9 +197,9 @@ void WorkerManager::Mod_Emp()
 			Boss boss(id, name, 3);
 		}
 
-		cout << "ĞŞ¸Ä³É¹¦£¡" << m_DeptId << endl;
+		cout << "ï¿½Ş¸Ä³É¹ï¿½ï¿½ï¿½" << m_DeptId << endl;
 
-		//±£´æµ½ÎÄ¼şÖĞ
+		//ï¿½ï¿½ï¿½æµ½ï¿½Ä¼ï¿½ï¿½ï¿½
 		save();
 	}
 
@@ -249,7 +207,7 @@ void WorkerManager::Mod_Emp()
 }
 
 
-//²éÕÒÖ°¹¤
+//ï¿½ï¿½ï¿½ï¿½Ö°ï¿½ï¿½
 void WorkerManager::Find_Emp()
 {
 
@@ -262,7 +220,7 @@ void WorkerManager::Find_Emp()
 
 	if (select == 1)
 	{
-			//°´ÕÕ±àºÅ²é
+			//ï¿½ï¿½ï¿½Õ±ï¿½Å²ï¿½
 		int id;
 		cout << "Please enter the employee number you are looking for:" << endl;
 		cin >> id;
@@ -270,7 +228,7 @@ void WorkerManager::Find_Emp()
 		int ret= IsExist(id);
 		if (ret != -1)
 		{
-			//ÕÒµ½Ö°¹¤
+			//ï¿½Òµï¿½Ö°ï¿½ï¿½
 			cout << "The employee exists in the system!" << endl;
 		}
 		else
@@ -280,13 +238,13 @@ void WorkerManager::Find_Emp()
 	}
 	if (select == 2)
 	{
-		//°´ÕÕĞÕÃû²é
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		string name;
 		cout << "Please enter the name you are looking for:" << endl;
 		cin >> name;
 
-		//¼ÓÈëÅĞ¶ÏÊÇ·ñ²éµ½µÄ±êÖ¾
-		bool flag = 0; //Ä¬ÈÏÎ´ÕÒµ½Ö°¹¤
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¶ï¿½ï¿½Ç·ï¿½éµ½ï¿½Ä±ï¿½Ö¾
+		bool flag = 0; //Ä¬ï¿½ï¿½Î´ï¿½Òµï¿½Ö°ï¿½ï¿½
 
 		for (int i = 0; i < m_EmpNum; i++)
 		{
@@ -310,7 +268,7 @@ void WorkerManager::Find_Emp()
 
 }
 
-//°´ÕÕ±àºÅÅÅĞò
+//ï¿½ï¿½ï¿½Õ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void WorkerManager::Sort_Emp()
 {
 
@@ -322,17 +280,17 @@ void WorkerManager::Sort_Emp()
 	cin >> select;
 	for (int i = 0; i < m_EmpNum; i++)
 	{
-		int minOrMax = i; //ÉùÃ÷×îĞ¡Öµ »ò ×î´óÖµÏÂ±ê
+		int minOrMax = i; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡Öµ ï¿½ï¿½ ï¿½ï¿½ï¿½Öµï¿½Â±ï¿½
 		for (int j = i + 1; j < m_EmpNum; j++)
 		{
-			if (select == 1) //ÉıĞò
+			if (select == 1) //ï¿½ï¿½ï¿½ï¿½
 			{
 				if (m_Id > Id)
 				{
 					minOrMax = j;
 				}
 			}
-			else  //½µĞò
+			else  //ï¿½ï¿½ï¿½ï¿½
 			{
 				if (m_Id < Id)
 				{
@@ -341,7 +299,7 @@ void WorkerManager::Sort_Emp()
 			}
 		}
 
-		//ÅĞ¶ÏÒ»¿ªÊ¼ÈÏ¶¨ ×îĞ¡Öµ»ò×î´óÖµ ÊÇ²»ÊÇ ¼ÆËãµÄ×îĞ¡Öµ»ò×î´óÖµ£¬Èç¹û²»ÊÇ ½»»»Êı¾İ
+		//ï¿½Ğ¶ï¿½Ò»ï¿½ï¿½Ê¼ï¿½Ï¶ï¿½ ï¿½ï¿½Ğ¡Öµï¿½ï¿½ï¿½ï¿½ï¿½Öµ ï¿½Ç²ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡Öµï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (i != minOrMax)
 		{
 			int temp = m_id;
@@ -352,12 +310,12 @@ void WorkerManager::Sort_Emp()
 	}
 
 	cout << "Sort successfully!" << endl;
-	save(); //ÅÅĞòºó½á¹û±£´æµ½ÎÄ¼şÖĞ
+	save(); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æµ½ï¿½Ä¼ï¿½ï¿½ï¿½
 	
 }
 
 
-//Çå¿ÕÎÄ¼ş
+//ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
 void WorkerManager::Clean_File()
 {
 	cout << "Are you sure to empty?" << endl;

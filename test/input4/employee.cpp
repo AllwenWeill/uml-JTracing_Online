@@ -1,6 +1,6 @@
 #include "employee.h"
 
-//构造函数
+//锟斤拷锟届函锟斤拷
 Employee::Employee(int id, string name, int dId)
 {
 	m_Id = id;
@@ -8,16 +8,17 @@ Employee::Employee(int id, string name, int dId)
 	m_DeptId = dId;
 }
 
-//显示个人信息
+//锟斤拷示锟斤拷锟斤拷锟斤拷息
 void Employee::showInfo()
 {
+    getDeptName();
 	cout << "worker ID: " << m_Id;
 	cout << "worker name: " << m_Name;
 	cout << "worker job:" << getDeptName();
 	cout << "worker position: Complete the tasks assigned by the manager." << endl;
 }
 
-//获取岗位名称
+//锟斤拷取锟斤拷位锟斤拷锟斤拷
 string Employee::getDeptName()
 {
 	return  string("employee");
