@@ -45,11 +45,13 @@ unordered_map<string, unordered_map<int, int>> ClassList::getActivationInfo() {
     return ClassActivation_umap;
 }
 void ClassList::modifyAltInfo(AltInformation AT, int elsePosition, string elseCondition) {
-    for (int i = 0; i < AT.altIncludeClassName.size(); i++)
-        Alt_umap[Alt_umap.size()].altIncludeClassName.push_back(AT.altIncludeClassName[i]);
-    Alt_umap[Alt_umap.size()].elseTimeLine.push_back(elsePosition);
-    if (elseCondition != "NULLCONDITION")
-        Alt_umap[Alt_umap.size()].elseCondition.push_back(elseCondition);
+        for (int i = 0; i < AT.altIncludeClassName.size(); i++) {
+            Alt_umap[Alt_umap.size()].altIncludeClassName.push_back(AT.altIncludeClassName[i]);
+        } for (int i = 0; i < AT.timeLine.size(); i++)
+            Alt_umap[Alt_umap.size()].timeLine.push_back(AT.timeLine[i]);
+        Alt_umap[Alt_umap.size()].elseTimeLine.push_back(elsePosition);
+        if (elseCondition != "NULLCONDITION")
+            Alt_umap[Alt_umap.size()].elseCondition.push_back(elseCondition);
 }
 unordered_map<int, LoopInformation> ClassList::getLoopInfo() {
     return Loop_umap;
@@ -98,7 +100,7 @@ bool ClassList::writeUMLfile_FuncTable() {
         ClassActivation_umap[startClassName][i] = newActivation;
     }
     map outputMap = convertUnorderedMapToMap(FuncCallInformation_umap);
-    m_FuncTablePath = "../../../test/output/FuncTable.txt";
+    m_FuncTablePath = "D:\\vs_workstation\\uml-JTracing_Online\\test\\output\\FuncTable.txt";
     umlFile.open(m_FuncTablePath);
     umlFile << "functionorder	invokeClassName		Funcname	callClassName	Selfcall" << endl;
     int count = 0;
@@ -112,7 +114,7 @@ bool ClassList::writeUMLfile_FuncTable() {
 }
 
 bool ClassList::writeUMLfile_LoopTable() {
-    m_LoopTablePath = "../../../test/output/LoopTable.txt";
+    m_LoopTablePath = "D:\\vs_workstation\\uml-JTracing_Online\\test\\output\\LoopTable.txt";
     umlFile.open(m_LoopTablePath);
     umlFile << "looporder    loopclassname   		     timeline     Loopcondition" << endl;
     int count = 0;
@@ -139,7 +141,7 @@ bool ClassList::writeUMLfile_LoopTable() {
 }
 
 bool ClassList::writeUMLfile_AltTable() {
-    m_AltTablePath = "../../../test/output/AltTable.txt";
+    m_AltTablePath = "D:\\vs_workstation\\uml-JTracing_Online\\test\\output\\AltTable.txt";
     umlFile.open(m_AltTablePath);
     umlFile << "altorder    altclassname            timeline        elsetimeline     altCondition   elseCondintion" << endl;
     int count = 0;
@@ -195,7 +197,7 @@ bool ClassList::writeUMLfile_AltTable() {
 }
 
 bool ClassList::writeUMLfile_ActivationTable() {
-    m_ActivationTablePath = "../../../test/output/ActivationTable.txt";
+    m_ActivationTablePath = "D:\\vs_workstation\\uml-JTracing_Online\\test\\output\\ActivationTable.txt";
     umlFile.open(m_ActivationTablePath);
     umlFile << "classname  activiationtime" << endl;
 

@@ -3,23 +3,6 @@
 WorkerManager::WorkerManager()
 {
 
-	//1、文件不存在
-
-	ifstream ifs;
-	ifs.open(FILENAME); // 读文件
-
-	if (!ifs.is_open())
-	{
-		cout << "Cannot find file!" << endl;
-		//初始化属性
-		//初始化记录人数
-		m_EmpNum = 0;
-		//初始化文件是否为空
-		m_FileIsEmpty = 1;
-		ifs.close();
-		return;
-	}
-
 	//2、文件存在 数据为空
 	char ch;
 	ifs >> ch;

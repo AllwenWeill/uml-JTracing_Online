@@ -849,6 +849,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         FC.callClassName = m_startClassName;
         FC.FuncName = curToken.getTokenStr();
         string funcname = FC.FuncName;
+        string originfuncname = funcname;
         int parentoffset = 1;
         if (m_tokenVector[m_offset + parentoffset].getTokenKind() == TokenKind::OpenParenthesis) {
             while (m_tokenVector[m_offset + parentoffset].getTokenKind() != TokenKind::CloseParenthesis) {
@@ -866,7 +867,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
             getNextToken();
         }
         // getNextToken(); //eat ;
-        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
+        vector<Token> targetTokenFlows = filterTokenFlow(originfuncname, FC.invokeClassName + ".cpp");
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         // if (FC.FuncName != m_tokenVector[4].getTokenStr())
         Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName);
@@ -942,6 +943,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         FC.FuncName = curToken.getTokenStr();
         string funcname = FC.FuncName;
         int parentoffset = 1;
+        string originfuncname = funcname;
         if (m_tokenVector[m_offset + parentoffset].getTokenKind() == TokenKind::OpenParenthesis) {
             while (m_tokenVector[m_offset + parentoffset].getTokenKind() != TokenKind::CloseParenthesis) {
                 funcname = funcname + m_tokenVector[m_offset + parentoffset].getTokenStr();
@@ -961,7 +963,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         cout << "parseing obj call function..." << endl;
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
-        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
+        vector<Token> targetTokenFlows = filterTokenFlow(originfuncname, FC.invokeClassName + ".cpp");
         Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
@@ -1013,6 +1015,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         string funcname = FC.FuncName;
         Token nextTokens = m_tokenVector[m_offset + 1];
         int parentoffset = 1;
+        string originfuncname = funcname;
         if (m_tokenVector[m_offset + parentoffset].getTokenKind() == TokenKind::OpenParenthesis) {
             // funcname = funcname +" ";
             while (m_tokenVector[m_offset + parentoffset].getTokenKind() != TokenKind::CloseParenthesis) {
@@ -1035,7 +1038,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         cout << "---->" << FC.invokeClassName << "->" << FC.FuncName << "()" << endl;
         //
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
-        vector<Token> targetTokenFlows = filterTokenFlow(FC.FuncName, FC.invokeClassName + ".cpp");
+        vector<Token> targetTokenFlows = filterTokenFlow(originfuncname, FC.invokeClassName + ".cpp");
         Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
