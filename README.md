@@ -14,3 +14,34 @@ UML-JTracing是基于C++20实现，针对于芯片领域常用C++和SystemVerilo
 * 利用递归下降法手工构建语法分析器，实现C++17和SystemVerilog常见语法检查，生成分析结果并输出可靠AST抽象语法树；
 * 提供解析过程信息、报错信息和变量表等解析信息，将源代码的执行流程进行特征提取，生成规范化的uml时序结构信息；
 * 利用Turtle图形库动态绘制UML时序图，并支持对象和消息自定义；
+
+## Demo演示
+----------
+> * __UML时序智能生成器整体演示__
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/github_func_demo.gif" height="429"/> </div>
+
+> * __基于C++多文件真实项目案例测试__
+> * *__<small>包含boss、workerManager等多个类，类与类之间存在互相调用和实例化，成员函数之间也存在多层嵌套关系，其中还包含各种for循环和while循环还有大量if else条件的使用</small>__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/test_files.png" height="200"/> </div>
+
+> * *__<small>提供解析过程信息</small>__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/parsing_info.png" height="200"/> </div>
+
+> * *__<small>提供UML时序结构信息：FuncTable</small>__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/funcTable.png" height="200"/> </div>
+
+> * *__<small>提供UML时序结构信息：FuncTable</small>__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/funcTable.png" height="200"/> </div>
+
+> * *__<small>提供UML时序结构信息：ActivationTable</small>__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/ActivationTable.png" height="200"/> </div>
+
+> * *__<small>提供UML时序结构信息：LoopTable</small>__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/LoopTable.png" height="60"/> </div>
+
+> * *__<small>提供UML时序结构信息：FuncTable</small>__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/AltTable.png" height="200"/> </div>
+
+
+
+
