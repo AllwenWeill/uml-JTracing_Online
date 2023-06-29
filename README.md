@@ -42,6 +42,9 @@ UML-JTracing是基于C++20实现，针对于芯片领域常用C++和SystemVerilo
 > * *__<small>提供UML时序结构信息：FuncTable</small>__*
 <div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/AltTable.png" height="200"/> </div>
 
+> * *__<small>UML时序图__*
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/UML.png" height="300"/> </div>
+
 ## 环境要求
 * Windows/macOS环境
 * C++17
