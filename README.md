@@ -42,6 +42,15 @@ UML-JTracing是基于C++20实现，针对于芯片领域常用C++和SystemVerilo
 > * *__<small>提供UML时序结构信息：FuncTable</small>__*
 <div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/AltTable.png" height="200"/> </div>
 
+## 环境要求
+* Windows/macOS环境
+* C++17
 
-
-
+## 项目启动
+```bash
+1. rebuild CMake->更新CMakeLists.txt
+2. 在main.cpp中修改exePath为uml-JTracing_Online\\test\\output\\umlDrawing.exe的绝对路径
+3. 在ClassList.cpp中修改m_ActivationTablePath、m_AltTablePath、m_LoopTablePath、m_FuncTablePath为uml-JTracing_Online\\test\\output\\对应.txt文件的绝对路径
+4. 运行启动项UML-JTracing_Online.exe
+(Input: 将需要分析的目标源文件放入Input文件夹中; Output: UML时序图及结构信息将生成在Output文件夹中.)
+```
