@@ -7,7 +7,7 @@
 [![GitHub LICENSE](https://img.shields.io/github/license/AllwenWeill/uml-JTracing_Online.svg)](https://github.com/AllwenWeill/uml-JTracing_Online/blob/master/LICENSE)
 [![GitHub contributors](https://img.shields.io/github/contributors/AllwenWeill/uml-JTracing_Online.svg)](https://github.com/AllwenWeill/uml-JTracing_Onlinee/graphs/contributors)
 
-UML-JTracing是基于C++20实现，针对于芯片领域常用C++和SystemVerilog两种编程语言自动进行高鲁棒性的词法解析和常见语法分析和语义分析，生成可靠Abstract Syntax Tree，并提供Parser解析过程信息、报错信息和变量表等解析信息，通过自定义数据结构对解析过程进行格式化存储，最终将利用Python实现的UML智能生成器检测到结构化后的解析信息，通过加载解析信息进行自动绘制目标源代码的UML时序图
+UML-JTracing是基于C++20实现的UML时序智能生成器，针对于芯片领域常用C++和SystemVerilog两种编程语言自动进行高鲁棒性的词法解析和常见语法分析和语义分析，生成可靠Abstract Syntax Tree，并提供Parser解析过程信息、报错信息和变量表等解析信息，通过自定义数据结构对解析过程进行格式化存储，最终将利用Python实现的UML智能生成器检测到结构化后的解析信息，通过加载解析信息进行自动绘制目标源代码的UML时序图
 
 ## 功能
 * 利用有限自动机逐字符扫描C++17和SystemVerilog源代码进行高鲁棒性词法分析，稳定生成对应Token;
