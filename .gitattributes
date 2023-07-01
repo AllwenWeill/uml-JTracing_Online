@@ -1,3 +1,4 @@
 *.cpp linguist-language=C++
 *.h linguist-language=C++
 *.toc linguist-language=C++
+*.html linguist-language=C++
