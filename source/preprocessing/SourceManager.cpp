@@ -2,7 +2,8 @@
 namespace fs = std::filesystem;
 SourceManager::SourceManager(fs::path& filepath) :
     m_filepath(filepath),
-    m_fileInputDirPath("../../../test/input")
+    m_fileInputDirPath("../../../test/input"),
+    m_isExistSVfile(false)
 {
     scanFileDir();
 }
@@ -29,8 +30,14 @@ bool SourceManager::scanFileDir() {
     }
     // debug: 打印文件名
     cout << "<File names> " << endl;
-    for (const auto& fileName : m_filenames) {
+    for (auto fileName : m_filenames) {
         std::cout << fileName << std::endl;
+        if (fileName.substr(fileName.size() - 3, fileName.size() - 1) == ".sv") {
+            m_isExistSVfile = true;
+            //std::filesystem::path tmpPath(fileName);
+            readsvSource(fileName);
+            return true;
+        }
         filterFileName(fileName);
     }
     cout << "-------------------------" << endl;
@@ -102,22 +109,25 @@ unordered_map<string, string> SourceManager::getcppFiles() {
 // function: 读取源代码.sv文件
 // param: .sv文件的路径
 // return: null
-void SourceManager::readsvSource(fs::path& filepath) {
+void SourceManager::readsvSource(string &filepath) {
     //判断.sv文件路径是否存在
-    if (!fs::exists(filepath)) {
+    string str_filepath = "../../../test/input/" + filepath;
+    //string str_filepath = "../../../test/input/test.sv";
+    fs::path svFilepath(str_filepath);
+    if (!fs::exists(svFilepath)) {
         perror("Error: Invaild filepath.\n");
         exit(-1); //修改为重新输入路径
     }
-    fd.filename = filepath.filename().string();
+    fd.filename = svFilepath.filename().string();
     //检测后缀三个字符是否为".sv"
     if (fd.filename.substr(fd.filename.size() - 3, fd.filename.size() - 1) != ".sv") {
         perror("Error: Not the .sv file.\n");
         exit(-1);//修改为重新输入路径
     }
-    fd.filedirectory = filepath.string();
-    std::ifstream stream(filepath, std::ios::binary);
+    fd.filedirectory = svFilepath.string();
+    std::ifstream stream(svFilepath, std::ios::binary);
     std::error_code ec;
-    fd.filesize = fs::file_size(filepath, ec);
+    fd.filesize = fs::file_size(svFilepath, ec);
     vector<char> buffer;
     buffer.resize((size_t)fd.filesize + 1);
     if (!stream.read(buffer.data(), (std::streamsize)fd.filesize)) {
@@ -132,4 +142,8 @@ void SourceManager::readSource(const string& codeText) {
     fd.filename = "null";
     fd.filedirectory = "null";
     fd.filememo = codeText;
+}
+
+bool SourceManager::isExitSVfile() {
+    return m_isExistSVfile;
 }

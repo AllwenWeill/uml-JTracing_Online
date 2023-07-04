@@ -12,7 +12,7 @@ struct VariableInformation {
 };
 class Parser {
 public:
-    Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName, string startClassName);
+    Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName, string startClassName, bool isSVfile);
     ~Parser();
     LogError LE;
     LogParser LogP;
@@ -21,6 +21,7 @@ public:
     unordered_map<string, VariableInformation> VariableInfo_umap; //变量存储表
     unordered_set<TokenKind> Type_uset; //变量类型表
 private:
+    bool m_isSVfile;
     string m_startClassName;
     string m_curFileName; 
     unordered_map<string, vector<Token>> m_hTokenFlows;
