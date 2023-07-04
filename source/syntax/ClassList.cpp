@@ -1,8 +1,8 @@
 //../../../test/output/FuncTable.txt
 #include "ClassList.h"
 
-ClassList::ClassList()
-    :m_classCounter(0), m_altCounter(0), m_loopCounter(0)
+ClassList::ClassList(bool isSVfile)
+    :m_classCounter(0), m_altCounter(0), m_loopCounter(0), m_isSVfile(isSVfile)
 {
     cout << "<Start building ClassList...>" << endl;
 }
@@ -229,21 +229,26 @@ map<KeyType, ValueType> ClassList::convertUnorderedMapToMap(const std::unordered
 }
 
 ClassList::~ClassList() {
-    cout << "Complete the build ClassList!" << endl;
-    if (writeUMLfile_FuncTable())
-        std::cout << "build <FuncTable.txt> success!" << std::endl;
-    else
-        std::cout << "build <FuncTable.txt> failed!" << std::endl;
-    if (writeUMLfile_LoopTable())
-        std::cout << "build <LoopTable.txt> success!" << std::endl;
-    else
-        std::cout << "build <LoopTable.txt> failed!" << std::endl;
-    if (writeUMLfile_AltTable())
-        std::cout << "build <AltTable.txt> success!" << std::endl;
-    else
-        std::cout << "build <AltTable.txt> failed!" << std::endl;
-    if (writeUMLfile_ActivationTable())
-        std::cout << "build <ActivationTable.txt> success!" << std::endl;
-    else
-        std::cout << "build <ActivationTable.txt> failed!" << std::endl;
+    if (!m_isSVfile) {
+        cout << "Complete the build ClassList!" << endl;
+        if (writeUMLfile_FuncTable())
+            std::cout << "build <FuncTable.txt> success!" << std::endl;
+        else
+            std::cout << "build <FuncTable.txt> failed!" << std::endl;
+        if (writeUMLfile_LoopTable())
+            std::cout << "build <LoopTable.txt> success!" << std::endl;
+        else
+            std::cout << "build <LoopTable.txt> failed!" << std::endl;
+        if (writeUMLfile_AltTable())
+            std::cout << "build <AltTable.txt> success!" << std::endl;
+        else
+            std::cout << "build <AltTable.txt> failed!" << std::endl;
+        if (writeUMLfile_ActivationTable())
+            std::cout << "build <ActivationTable.txt> success!" << std::endl;
+        else
+            std::cout << "build <ActivationTable.txt> failed!" << std::endl;
+    }
+    else {
+        cout << "<Parsing is complete!>" << endl;
+    }
 }

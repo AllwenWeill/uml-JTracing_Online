@@ -8,13 +8,13 @@
 int main(int argc, char* argv[]){
     fs::path fp;
     SourceManager SM(fp);
-    ClassList CList;
-    ClassList* pCList = &CList;
     unordered_map<string, vector<Token>> hTokenFlows;
     unordered_map<string, vector<Token>> cppTokenFlows;
     vector<string> classNames;
     bool isSVfile = false;
     if (!SM.isExitSVfile()) { //cpp
+        ClassList CList(false);
+        ClassList* pCList = &CList;
         for (auto hFile : SM.gethFiles()) {
             Lexer lex(&hFile.second, hFile.second.size());
             cout << hFile.first << endl;
@@ -38,6 +38,8 @@ int main(int argc, char* argv[]){
         Parser par(hTokenFlows, cppTokenFlows, cppTokenFlows["main.cpp"], classNames, pCList, "main.cpp", "MainClass", false);
     }
     else { //sv
+        ClassList CList(true);
+        ClassList* pCList = &CList;
         string* psm = &SM.fd.filememo;
         Lexer lex(psm, SM.fd.filesize);
         Parser par(hTokenFlows, cppTokenFlows, lex.getTokenVector(), classNames, pCList, "main.cpp", "MainClass", true);
