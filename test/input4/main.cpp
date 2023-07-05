@@ -9,6 +9,8 @@ using  namespace std;
 
 int main()
 {
+    WorkerManager wm;
+    wm.Add_Emp();
 	Employee * employee = new Employee(1, "ZhangSan", 1);
 	employee->showInfo();
 
@@ -19,7 +21,6 @@ int main()
     boss->showInfo();
 
 	//ʵ���������߶���
-	WorkerManager wm;
 
 
 	while (1)

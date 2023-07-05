@@ -1,3 +1,13 @@
 altorder    altclassname            timeline        elsetimeline     altCondition   elseCondintion
-1          MainClass,Actor     1     -1   a==5   -1   
-2          MainClass,Chef,Chef,Test     2,3     -1   a==3   -1   
+1          MainClass,WorkerManager     2     3   addNum0   -1   
+2          MainClass,WorkerManager     10     -1   choice==0   -1   
+3          MainClass,WorkerManager     12     13   addNum0   -1   
+4          MainClass,WorkerManager,WorkerManager,WorkerManager     11,12     -1   choice==1   -1   
+5          MainClass,WorkerManager     15     -1   index=-1   -1   
+6          MainClass,WorkerManager,WorkerManager,WorkerManager,WorkerManager,WorkerManager     13,14,15     -1   choice==3   -1   
+7          MainClass,WorkerManager     18     -1   ret=-1   -1   
+8          MainClass,WorkerManager,WorkerManager,WorkerManager,WorkerManager,WorkerManager     16,17,18     21   choice==4   -1   
+9          MainClass,WorkerManager     20     21   select==1   -1   
+10          MainClass,WorkerManager,WorkerManager,WorkerManager     19,20     22   choice==5   -1   
+11          MainClass,WorkerManager,WorkerManager,WorkerManager     21,22     -1   choice==6   -1   
+12          MainClass,WorkerManager     23     -1   choice==7   -1   

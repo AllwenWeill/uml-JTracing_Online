@@ -100,8 +100,11 @@ void Parser::mainParser() {
 }
 
 void Parser::getNextToken() {
-    if (m_offset >= m_tokenVector.size())
+    if (m_offset >= m_tokenVector.size()-1)
         return;
+    int a =m_offset;
+    int b =m_tokenVector.size();
+    string a1= m_tokenVector[a+1].getTokenStr();
     curToken = m_tokenVector[++m_offset];
     curTokenKind = curToken.getTokenKind();
 }
@@ -446,7 +449,9 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
         LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).callClassName);
         LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).invokeClassName);
     }
-    m_pCList->addLoopInfo(LP);
+    if (end > start){
+        m_pCList->addLoopInfo(LP);
+    }
     getNextToken(); //eat '}'
     return std::make_shared<ForAST>(expr, init, cmp, step);
 }
@@ -518,7 +523,10 @@ std::shared_ptr<ExprAST> Parser::ParseIf() {
         AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i+1).callClassName);
         AT.altIncludeClassName.push_back(m_pCList->getFuncCallInfo().at(i+1).invokeClassName);
     }
-    m_pCList->addAltInfo(AT);
+    if(end >start){
+        m_pCList->addAltInfo(AT);
+    }
+    string a = curToken.getTokenStr();
     getNextToken(); //eat '}'
     return std::move(std::make_shared<IfAST>(cond, exprs));
 }
@@ -927,7 +935,12 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         }
         //装载激活相关信息
         auto activationClassName=m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
-        m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,1);
+        if(m_pCList->getActivationInfo().find(activationClassName)==m_pCList->getActivationInfo().end()||m_pCList->getActivationInfo().at(activationClassName).find(curFuncCallOrder) == m_pCList->getActivationInfo().at(activationClassName).end())
+            m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,1);
+        else{
+            int k=m_pCList->getActivationInfo().at(activationClassName).at(curFuncCallOrder)+1;
+            m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,k);
+        }
         for (int i =curFuncCallOrder+1;i<=afterDfsCallOrder;i++){
             if(m_pCList->getActivationInfo().at(activationClassName).find(i)== m_pCList->getActivationInfo().at(activationClassName).end()){
                 m_pCList->modifyClassActivationInfo(activationClassName,i,1);
@@ -936,8 +949,10 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                 auto tmpDescendantsSequenceMap =(m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
                 for(auto j:tmpDescendantsSequenceMap){
                     int k=m_pCList->getActivationInfo().at(activationClassName).at(j.first)+1;
-                    m_pCList->modifyClassActivationInfo(activationClassName,i,k);
+                    m_pCList->modifyClassActivationInfo(activationClassName,j.first,k);
                 }
+                int p =m_pCList->getActivationInfo().at(activationClassName).at(i)+1;
+                m_pCList->modifyClassActivationInfo(activationClassName,i,p);
             }
         }
         // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
@@ -998,6 +1013,8 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(originfuncname, FC.invokeClassName+".cpp");
+        int size =targetTokenFlows.size();
+        string inva =FC.invokeClassName;
         Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName, m_isSVfile);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
@@ -1021,7 +1038,12 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         }
         //装载激活相关信息
        auto activationClassName=m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
-        m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,1);
+        if(m_pCList->getActivationInfo().find(activationClassName)==m_pCList->getActivationInfo().end()||m_pCList->getActivationInfo().at(activationClassName).find(curFuncCallOrder) == m_pCList->getActivationInfo().at(activationClassName).end())
+            m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,1);
+        else{
+            int k=m_pCList->getActivationInfo().at(activationClassName).at(curFuncCallOrder)+1;
+            m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,k);
+        }
         for (int i =curFuncCallOrder+1;i<=afterDfsCallOrder;i++){
             if(m_pCList->getActivationInfo().at(activationClassName).find(i)== m_pCList->getActivationInfo().at(activationClassName).end()){
                 m_pCList->modifyClassActivationInfo(activationClassName,i,1);
@@ -1030,8 +1052,10 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                 auto tmpDescendantsSequenceMap =(m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
                 for(auto j:tmpDescendantsSequenceMap){
                     int k=m_pCList->getActivationInfo().at(activationClassName).at(j.first)+1;
-                    m_pCList->modifyClassActivationInfo(activationClassName,i,k);
+                    m_pCList->modifyClassActivationInfo(activationClassName,j.first,k);
                 }
+                int p =m_pCList->getActivationInfo().at(activationClassName).at(i)+1;
+                m_pCList->modifyClassActivationInfo(activationClassName,i,p);
             }
         }
        // vector<Token> targetTokenFlows2 = filterTokenFlow(FC.FuncName, FC.invokeClassName+".cpp");
@@ -1099,7 +1123,12 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         }
         //装载激活相关信息
         auto activationClassName=m_pCList->getFuncCallInfo().at(curFuncCallOrder).invokeClassName;
-        m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,1);
+        if(m_pCList->getActivationInfo().find(activationClassName)==m_pCList->getActivationInfo().end()||m_pCList->getActivationInfo().at(activationClassName).find(curFuncCallOrder) == m_pCList->getActivationInfo().at(activationClassName).end())
+            m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,1);
+        else{
+            int k=m_pCList->getActivationInfo().at(activationClassName).at(curFuncCallOrder)+1;
+            m_pCList->modifyClassActivationInfo(activationClassName,curFuncCallOrder,k);
+        }
         for (int i =curFuncCallOrder+1;i<=afterDfsCallOrder;i++){
             if(m_pCList->getActivationInfo().at(activationClassName).find(i)== m_pCList->getActivationInfo().at(activationClassName).end()){
                 m_pCList->modifyClassActivationInfo(activationClassName,i,1);
@@ -1108,8 +1137,10 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
                 auto tmpDescendantsSequenceMap =(m_pCList->getFuncCallInfo()).at(i).descendantsSequence;
                 for(auto j:tmpDescendantsSequenceMap){
                     int k=m_pCList->getActivationInfo().at(activationClassName).at(j.first)+1;
-                    m_pCList->modifyClassActivationInfo(activationClassName,i,k);
+                    m_pCList->modifyClassActivationInfo(activationClassName,j.first,k);
                 }
+                int p =m_pCList->getActivationInfo().at(activationClassName).at(i)+1;
+                m_pCList->modifyClassActivationInfo(activationClassName,i,p);
             }
         }
 
@@ -1159,7 +1190,9 @@ std::shared_ptr<WhileAST>  Parser::ParseWhile() {
         LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).callClassName);
         LP.loopIcludeClassName.push_back(m_pCList->getFuncCallInfo().at(i).invokeClassName);
     }
-    m_pCList->addLoopInfo(LP);
+    if( end > start){
+        m_pCList->addLoopInfo(LP);
+    }
     getNextToken(); //eat '}'
     return make_shared<WhileAST>(cmp, exprs);
 }
@@ -1233,6 +1266,7 @@ return: ɸѡ�õ���tokenflowfilte
 //todo 静态成员函数 this指针 filter文件todo列表初始化
 */
 vector<Token> Parser::filterTokenFlow(string targetFuncName, string targetfFleName) {
+    int openBraceCount =0;
     vector<Token> MresTokenFlow;
     vector<Token> resTokenFlow;
     for (int i = 0; i < m_cppTokenFlows[targetfFleName].size(); i++) { //����ɨ���.cpp�ļ�������tokenflow
@@ -1248,7 +1282,13 @@ vector<Token> Parser::filterTokenFlow(string targetFuncName, string targetfFleNa
                 //vector<Token> resTokenFlow;
                 //resTokenFlow.push_back(create(TokenKind::VoidKeyword, 1, 1, "void"));
                 MresTokenFlow.push_back(tmpToken);
-                 if (m_cppTokenFlows[targetfFleName][j].getTokenKind() == TokenKind::CloseBrace) {
+                 if(m_cppTokenFlows[targetfFleName][j].getTokenKind() == TokenKind::OpenBrace) {
+                    openBraceCount++;
+                 }
+                 if(m_cppTokenFlows[targetfFleName][j].getTokenKind() == TokenKind::CloseBrace&& openBraceCount !=0) {
+                     openBraceCount--;
+                 }
+                 if (m_cppTokenFlows[targetfFleName][j].getTokenKind() == TokenKind::CloseBrace&& openBraceCount ==0) {
                     i++;
                     break;
                 }

@@ -1,7 +1,7 @@
 #include "manager.h"
 
 //���캯��
-manager::manager(int id, string name, int dId)
+Manager::Manager(int id, string name, int dId)
 {
 	m_Id = id;
 	m_Name = name;
@@ -9,10 +9,9 @@ manager::manager(int id, string name, int dId)
 }
 
 //��ʾ������Ϣ
-void manager::showInfo()
+void Manager::showInfo()
 {
-    Boss* boss = new Boss();
-    boss->showInfo();
+
 
     cout << "worker ID: " << m_Id;
 	cout << "worker name: " << m_Name;
@@ -22,7 +21,7 @@ void manager::showInfo()
 }
 
 //��ȡ��λ����
-string manager::getDeptName()
+string Manager::getDeptName()
 {
 	return  string("manager");
 }

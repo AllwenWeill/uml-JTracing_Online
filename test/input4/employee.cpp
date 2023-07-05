@@ -11,7 +11,6 @@ Employee::Employee(int id, string name, int dId)
 //��ʾ������Ϣ
 void Employee::showInfo()
 {
-    getDeptName();
 	cout << "worker ID: " << m_Id;
 	cout << "worker name: " << m_Name;
 	cout << "worker job:" << getDeptName();
