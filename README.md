@@ -51,7 +51,7 @@ UML-JTracing是基于C++20实现的UML时序智能生成器，针对于芯片领
 
 ## 项目启动
 
-**<span style="color:red;">Warming: 项目持续更新中，请拉取aw_0705分支获取最新代码...</span>**
+**<span style="color:red;">Warming: 项目持续更新中，请拉取umlupdate/aw_0705分支获取最新代码...</span>**
 
 ```bash
 1. rebuild CMake->更新CMakeLists.txt
