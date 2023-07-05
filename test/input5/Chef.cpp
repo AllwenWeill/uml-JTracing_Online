@@ -3,7 +3,8 @@
 
 void Chef::cooking() {
     Test c2;
-    c2.buyFood();
+    int a =0;
+    c2.buyFood(a);
     std::cout << "The chef is cooking..." << std::endl;
 
 }

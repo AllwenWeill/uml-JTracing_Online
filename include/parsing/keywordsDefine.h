@@ -1,4 +1,4 @@
-//ря╡╧ЁДжа2012
+//О©╫я╡О©╫О©╫О©╫О©╫О©╫2012
 #define KEYWORDS_1364_1995 \
     { "always", TokenKind::AlwaysKeyword },\
     { "and", TokenKind::AndKeyword },\
@@ -239,5 +239,13 @@
     {"valarray", TokenKind::ValarrayKeyword },\
     {"vector", TokenKind::VectorKeyword },\
     {"void_t ", TokenKind::Void_tKeyword },\
-    {"vprintf", TokenKind::VprintfKeyword }
+    {"vprintf", TokenKind::VprintfKeyword }, \
+    {"module", TokenKind::ModuleKeyword }, \
+    {"always_ff", TokenKind::AlwaysFFKeyword }, \
+    {"always_comb", TokenKind::AlwaysCombKeyword }, \
+    {"initial", TokenKind::InitialKeyword }, \
+    { "nettype", TokenKind::NetTypeKeyword },\
+    { "soft", TokenKind::SoftKeyword }, \
+    {"bit", TokenKind::BitKeyword}, \
+    {"endmodule", TokenKind::EndModuleKeyword}
 

@@ -1,5 +1,5 @@
 #include "Parser.h"
-Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName,string startClassName)
+Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<string, vector<Token>> cppTokenFlows, vector<Token> tokenVector, vector<string> classNames, ClassList* pCList, string curFileName, string startClassName, bool isSVfile)
     :m_hTokenFlows(hTokenFlows),
     m_cppTokenFlows(cppTokenFlows),
     m_tokenVector(tokenVector),
@@ -7,7 +7,8 @@ Parser::Parser(unordered_map<string, vector<Token>> hTokenFlows, unordered_map<s
     m_classNames(classNames),
     m_pCList(pCList),
     m_curFileName(curFileName),
-    m_startClassName(startClassName)
+     m_startClassName(startClassName),
+     m_isSVfile(isSVfile)
 {
     m_offset = 0;
     buildTypeUset();
@@ -84,12 +85,16 @@ void Parser::mainParser() {
             if (curTokenKind == TokenKind::IfKeyword || curTokenKind == TokenKind::WhileKeyword || curTokenKind == TokenKind::ElseKeyword || curTokenKind == TokenKind::ForKeyword) {
                 parsePrimary();
             }
-            if (curTokenKind == TokenKind::CloseBrace || curTokenKind == TokenKind::CloseBracket || curTokenKind == TokenKind::CloseParenthesis || curTokenKind == TokenKind::Semicolon) {
-                getNextToken();
+             if (curTokenKind == TokenKind::CloseBrace || curTokenKind == TokenKind::CloseBracket || curTokenKind == TokenKind::CloseParenthesis || curTokenKind == TokenKind::Semicolon) {
+                    getNextToken();
             }
-            if(m_offset < tmpSize)
-            ParseExpression();
-            break;
+            if (curTokenKind == TokenKind::EndModuleKeyword) {
+                    getNextToken();
+                    break;
+                }
+                if(m_offset < tmpSize)
+                ParseExpression();
+                break;
         }
     }
 }
@@ -321,7 +326,6 @@ std::shared_ptr<DefinitionAST> Parser::ParseModuleDefinition() { //����m
         return nullptr;
     }
     std::string moduleName = curToken.getTokenStr();
-    getNextToken();
     if (curTokenKind != TokenKind::Semicolon) {
         LE.addnote("expected ';'", curToken.TL.m_tokenLine);
         //return nullptr;
@@ -338,8 +342,10 @@ std::shared_ptr<DefinitionAST> Parser::ParseModuleDefinition() { //����m
         auto V = ParseExpression();
         if (V != nullptr)
             Exprs.push_back(V);
-        else
-            m_offset--;
+        else {
+            //m_offset--;
+            getNextToken();
+        }
     }
     return std::make_shared<DefinitionAST>(moduleName, Exprs);
 }
@@ -371,6 +377,7 @@ std::shared_ptr<Always_combAST> Parser::ParseAlways_comb() {
 }
 
 std::shared_ptr<ForAST> Parser::ParseFor() {
+    LogP.addnote("->parsing a For...");
     getNextToken(); //eat for�ؼ���
     LoopInformation LP;
     if (curTokenKind != TokenKind::OpenParenthesis) { //��ʱ�ڴ�һ��(
@@ -383,6 +390,22 @@ std::shared_ptr<ForAST> Parser::ParseFor() {
         LE.addnote("expected ';'", curToken.TL.m_tokenLine);
     }
     getNextToken(); //eat ;
+    if (m_isSVfile) {
+        auto LHS = ParseIdentifierExpr(TokenKind::NullKeyword);
+        auto cmp = ParseCmpOpRHS(LHS);
+        if (curTokenKind != TokenKind::Semicolon) {
+            LE.addnote("expected ';'", curToken.TL.m_tokenLine);
+        }
+        getNextToken(); //eat ;
+        auto step = ParseExpression();
+        if (curTokenKind != TokenKind::CloseParenthesis) {
+            LE.addnote("expected ')'", curToken.TL.m_tokenLine);
+            return nullptr;
+        }
+        getNextToken(); //eat )
+        auto expr = ParseExpression();
+        return std::make_shared<ForAST>(expr, init, cmp, step);
+    }
     int conditionLenth =0;
     string loopCondition;
     while(m_tokenVector[m_offset+conditionLenth].getTokenKind()!=TokenKind::Semicolon){
@@ -881,7 +904,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         vector<Token> targetTokenFlows = filterTokenFlow(originfuncname, FC.invokeClassName + ".cpp");
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
        // if (FC.FuncName != m_tokenVector[4].getTokenStr())
-        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp",m_startClassName);
+        Parser dfsPar(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName, m_isSVfile);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int,int> tmpCurDescendantsSequenceMap;
@@ -975,7 +998,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         cout << "---->" << FC.invokeClassName << "." << FC.FuncName << "()" << endl;
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(originfuncname, FC.invokeClassName+".cpp");
-        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp",m_startClassName);
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName, m_isSVfile);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int,int> tmpCurDescendantsSequenceMap;
@@ -1050,7 +1073,7 @@ std::shared_ptr<FuncAST> Parser::handlObj() {
         //
         int curFuncCallOrder = (m_pCList->getFuncCallInfo()).size();
         vector<Token> targetTokenFlows = filterTokenFlow(originfuncname, FC.invokeClassName + ".cpp");
-        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp",m_startClassName);
+        Parser dfs(m_hTokenFlows, m_cppTokenFlows, targetTokenFlows, m_classNames, m_pCList, FC.invokeClassName + ".cpp", m_startClassName, m_isSVfile);
         int afterDfsCallOrder = (m_pCList->getFuncCallInfo()).size();
         //统计递归次数
         unordered_map<int,int> tmpCurDescendantsSequenceMap;

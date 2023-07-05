@@ -20,14 +20,16 @@ public:
     FileData fd;
     SourceManager(fs::path& filepath);
     SourceManager(const string& codeText);
-    void readsvSource(fs::path& filepath);
+    void readsvSource(string& filepath);
     string readNormalSource(fs::path& filepath); //读取.h/.cpp文件
     void readSource(const string& codeText);
     ~SourceManager() {};
     bool scanFileDir();
     unordered_map<string, string> gethFiles();
     unordered_map<string, string> getcppFiles();
+    bool isExitSVfile();
 private:
+    bool m_isExistSVfile;
     fs::path m_filepath; //文件路径
     fs::path m_fileInputDirPath; //输入文件夹路径
     fs::path m_fileOutputDirPath; //输出文件夹路径

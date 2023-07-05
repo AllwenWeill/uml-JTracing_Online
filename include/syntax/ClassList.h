@@ -34,6 +34,7 @@ private:
     template<typename KeyType, typename ValueType>
     map<KeyType, ValueType> convertUnorderedMapToMap(const unordered_map<KeyType, ValueType>& unorderedMap);
     std::ofstream umlFile;
+    bool m_isSVfile;
     int m_classCounter;
     int m_altCounter;
     int m_loopCounter;
@@ -73,7 +74,7 @@ public:
     unordered_map<int, LoopInformation> getLoopInfo();
     unordered_map<int, AltInformation> getAltInfo();
     unordered_map<string, vector<int>> getClassActivationInfo();
-	ClassList();
+    ClassList(bool isSVfile);
 	~ClassList();
 };
 
