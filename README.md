@@ -43,7 +43,7 @@ UML-JTracing是基于C++20实现的UML时序智能生成器，针对于芯片领
 <div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/AltTable.png" height="200"/> </div>
 
 > * *__<small>UML时序图__*
-<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/UML.png" height="300"/> </div>
+<div align=center><img src="https://github.com/AllwenWeill/IMG/blob/main/UML2.png" height="800"/> </div>
 
 ## 环境要求
 * Windows/macOS环境
